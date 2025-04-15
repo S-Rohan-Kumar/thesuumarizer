@@ -8,6 +8,14 @@ import speech_recognition as sr
 from pydub import AudioSegment
 import os
 import tempfile
+import sys
+
+if sys.platform == 'win32':  # 'win32' indicates Windows
+    import winreg
+    # Use winreg here for Windows-specific functionality
+else:
+    # Handle the non-Windows case (e.g., skip or use an alternative)
+    pass
 from langi import extract_text
 import yt_dlp
 from pydub.utils import make_chunks
