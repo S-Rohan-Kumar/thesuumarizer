@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summarizer+ | Convert Any Media to Text</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-dark: #4F46E5;
+            --secondary: #EC4899;
+            --accent: #8B5CF6;
+            --light: #F9FAFB;
+            --dark: #1F2937;
+        }
+        #sumz{
+            background-color: white;
+            color: black;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #F9FAFB 0%, #E5E7EB 100%);
+            min-height: 100vh;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%, -50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn-primary:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        .feature-icon {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover .feature-icon {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        .feature-icon::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.2) 100%);
+            top: -100%;
+            left: -100%;
+            transition: all 0.6s ease;
+        }
+
+        .card:hover .feature-icon::before {
+            top: 0;
+            left: 0;
+        }
+
+        .tab {
+            cursor: pointer;
+            padding: 1rem;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            /* Add this line to prevent text wrapping */
+            font-size: 0.9rem;
+            /* Slightly smaller font for tabs */
+        }
+
+        @media (max-width: 768px) {
+            .tab {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        .tab::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .tab:hover::after {
+            width: 80%;
+        }
+
+        .tab.active {
+            background-color: white;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .tab.active::after {
+            width: 90%;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .file-upload {
+            border: 2px dashed #E5E7EB;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary);
+            background-color: rgba(99, 102, 241, 0.05);
+            transform: scale(1.01);
+        }
+
+        .file-upload i {
+            transition: all 0.4s ease;
+        }
+
+        .file-upload:hover i {
+            transform: translateY(-5px);
+            color: var(--primary);
+        }
+
+        .loader {
+            border: 3px solid rgba(99, 102, 241, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--primary);
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .youtube-input {
+            padding: 0.75rem;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            width: 100%;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .youtube-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+            outline: none;
+        }
+
+        /* Pulse animation for important elements */
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+            }
+        }
+
+        /* Animation for result container */
+        .result-appear {
+            animation: resultAppear 0.8s forwards;
+        }
+
+        @keyframes resultAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Animation for success feedback */
+        .success-animation {
+            animation: successPop 0.5s ease;
+        }
+
+        @keyframes successPop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Hover effects for footer links */
+        .footer-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .footer-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -2px;
+            left: 0;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
+        .footer-link:hover::after {
+            width: 100%;
+        }
+
+        /* Floating animation for cards */
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        /* Progress bar animation */
+        .progress-bar {
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+
+        /* Formatted content styling */
+        .formatted-content {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 0.75rem;
+        }
+
+        .section-content {
+            line-height: 1.6;
+        }
+
+        .point-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .point-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .point-list li:before {
+            content: '•';
+            color: var(--accent);
+            position: absolute;
+            left: 0.25rem;
+            font-weight: bold;
+        }
+
+        /* Mobile-specific styles */
+        .mobile-menu-button {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-menu-button {
+                display: block;
+            }
+
+            .nav-menu {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background-color: white;
+                padding: 1rem;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                z-index: 50;
+            }
+
+            .nav-menu.active {
+                display: flex;
+            }
+
+            .nav-menu button {
+                margin: 0.5rem 0;
+                width: 100%;
+                text-align: left;
+            }
+
+            /* Improve tab scrolling on mobile */
+            #tab-container {
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                /* Firefox */
+                -ms-overflow-style: none;
+                /* Internet Explorer 10+ */
+            }
+
+            #tab-container::-webkit-scrollbar {
+                display: none;
+                /* Safari and Chrome */
+            }
+
+            /* Adjust file upload for mobile */
+            .file-upload {
+                padding: 1.5rem 1rem;
+            }
+
+            /* Make buttons more tappable on mobile */
+            button, .btn-primary {
+                padding-top: 0.75rem !important;
+                padding-bottom: 0.75rem !important;
+                min-height: 44px; /* Minimum touch target size */
+            }
+            
+            /* Adjust text sizes for mobile */
+            h2.text-4xl {
+                font-size: 1.875rem !important;
+            }
+            
+            p.text-xl {
+                font-size: 1.125rem !important;
+            }
+        }
+
+        /* No scrollbar utility */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Adjust font sizes for better readability on mobile */
+        @media (max-width: 640px) {
+            .text-sm {
+                font-size: 0.875rem !important;
+            }
+            
+            .text-lg {
+                font-size: 1.125rem !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="bg-white shadow-sm py-4 animate__animated animate__fadeInDown relative">
+        <div class="container mx-auto px-4 md:px-6 flex flex-wrap justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold gradient-text animate__animated animate__heartBeat animate__delay-1s">
+                    Summarizer<span class="text-secondary">+</span></h1>
+            </div>
+            
+            <!-- Mobile menu button -->
+            <button class="mobile-menu-button md:hidden p-2 rounded-lg focus:outline-none">
+                <i class="fas fa-bars text-gray-700"></i>
+            </button>
+            
+            <div class="nav-menu md:flex md:items-center md:space-x-4 space-y-2 md:space-y-0">
+                <button
+                    class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300 bttn">
+                    Switch Background
+                </button>
+                <button
+                    class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300 chatbot"
+                    onclick="aa()">
+                    Synapse
+                </button>
+                <button class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all duration-300">
+                    <i class="fas fa-question-circle mr-1"></i> Help
+                </button>
+                <button
+                    class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300">
+                    <i class="fas fa-user mr-1"></i> Login
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <header class="container mx-auto px-4 md:px-6 py-8 md:py-12 text-center animate__animated animate__fadeIn animate__delay-0.5s">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Transform Any Media into <span class="gradient-text">Text & Summaries</span>
+        </h2>
+        <p class="text-gray-600 text-lg md:text-xl max-w-3xl mx-auto mb-8 md:mb-12">
+            Extract text from images, videos, and audio files. Get instant summaries with key points highlighted.
+        </p>
+    </header>
+
+    <main class="container mx-auto px-4 md:px-6 pb-16 animate__animated animate__fadeIn animate__delay-1s">
+        <div class="bg-white rounded-xl shadow-md p-4 md:p-6">
+            <div class="flex mb-4 overflow-x-auto no-scrollbar" id="tab-container">
+                <div class="tab active flex items-center" data-tab="image">
+                    <i class="fas fa-image mr-1 md:mr-2"></i> <span class="hidden sm:inline">Extract from</span> Image
+                </div>
+                <div class="tab flex items-center" data-tab="audio">
+                    <i class="fas fa-headphones mr-1 md:mr-2"></i> Audio <span class="hidden sm:inline">to Text</span>
+                </div>
+                <div class="tab flex items-center" data-tab="video">
+                    <i class="fas fa-video mr-1 md:mr-2"></i> Video <span class="hidden sm:inline">to Text</span>
+                </div>
+                <div class="tab flex items-center" data-tab="youtube">
+                    <i class="fab fa-youtube mr-1 md:mr-2"></i> YouTube
+                </div>
+                <div class="tab flex items-center" data-tab="summarize">
+                    <i class="fas fa-file-alt mr-1 md:mr-2"></i> Summarize
+                </div>
+                <div class="tab flex items-center" data-tab="pdf">
+                    <i class="fas fa-file-pdf mr-1 md:mr-2"></i> PDF
+                </div>
+            </div>
+
+            <div class="tab-content active" id="image-tab">
+                <form id="image-form" class="space-y-6">
+                    <div class="file-upload">
+                        <input type="file" id="image-input" class="hidden" accept="image/*">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-cloud-upload-alt text-3xl md:text-4xl text-gray-400 mb-3 md:mb-4"></i>
+                            <p class="text-base md:text-lg text-gray-500 mb-2">Drag & drop your image here</p>
+                            <p class="text-xs md:text-sm text-gray-400">Or tap to browse</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-center">
+                        <button type="submit"
+                            class="btn-primary px-5 py-3 rounded-lg flex items-center pulse-animation submit-btn text-base md:text-lg">
+                            <i class="fas fa-magic mr-2"></i> Extract Text
+                            <div class="loader ml-2" id="image-loader"></div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="tab-content" id="pdf-tab">
+                <form id="pdf-form" class="space-y-6">
+                    <div class="file-upload">
+                        <input type="file" id="pdf-input" class="hidden" accept="application/pdf">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-cloud-upload-alt text-3xl md:text-4xl text-gray-400 mb-3 md:mb-4"></i>
+                            <p class="text-base md:text-lg text-gray-500 mb-2">Drag & drop your PDF here</p>
+                            <p class="text-xs md:text-sm text-gray-400">Or tap to browse</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-center">
+                        <button type="submit"
+                            class="btn-primary px-5 py-3 rounded-lg flex items-center pulse-animation submit-btn text-base md:text-lg">
+                            <i class="fas fa-magic mr-2"></i> Extract Text
+                            <div class="loader ml-2" id="pdf-loader"></div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="tab-content" id="audio-tab">
+                <form id="audio-form" class="space-y-6">
+                    <div class="file-upload">
+                        <input type="file" id="audio-input" class="hidden" accept="audio/*">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-music text-3xl md:text-4xl text-gray-400 mb-3 md:mb-4"></i>
+                            <p class="text-base md:text-lg text-gray-500 mb-2">Upload your audio file</p>
+                            <p class="text-xs md:text-sm text-gray-400">MP3, WAV, M4A formats supported</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-center">
+                        <button type="submit" class="btn-primary px-5 py-3 rounded-lg flex items-center submit-btn text-base md:text-lg">
+                            <i class="fas fa-headphones mr-2"></i> Transcribe Audio
+                            <div class="loader ml-2" id="audio-loader"></div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="tab-content" id="video-tab">
+                <form id="video-form" class="space-y-6">
+                    <div class="file-upload">
+                        <input type="file" id="video-input" class="hidden" accept="video/*">
+                        <div class="flex flex-col items-center">
+                            <i class="fas fa-film text-3xl md:text-4xl text-gray-400 mb-3 md:mb-4"></i>
+                            <p class="text-base md:text-lg text-gray-500 mb-2">Upload your video file</p>
+                            <p class="text-xs md:text-sm text-gray-400">MP4, MOV, AVI formats supported</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-center">
+                        <button type="submit" class="btn-primary px-5 py-3 rounded-lg flex items-center submit-btn text-base md:text-lg">
+                            <i class="fas fa-video mr-2"></i> Extract Audio & Transcribe
+                            <div class="loader ml-2" id="video-loader"></div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="tab-content" id="youtube-tab">
+                <form id="youtube-form" class="space-y-6">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="youtube-url">
+                            YouTube Video URL
+                        </label>
+                        <input type="url" id="youtube-url" class="youtube-input"
+                            placeholder="https://www.youtube.com/watch?v=..." required>
+                    </div>
+                    <div class="flex justify-center">
+                        <button type="submit" class="btn-primary px-5 py-3 rounded-lg flex items-center submit-btn text-base md:text-lg">
+                            <i class="fab fa-youtube mr-2"></i> Extract Audio & Transcribe
+                            <div class="loader ml-2" id="youtube-loader"></div>
+                            <div class="progress-bar" id="youtube-progress"></div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="tab-content" id="summarize-tab">
+                <form id="summarize-form" class="space-y-6">
+                    <div>
+                        <textarea id="text-input" rows="8" md:rows="10"
+                            class="w-full p-3 md:p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300"
+                            placeholder="Paste your text here for summarization..."></textarea>
+                    </div>
+                    <div class="flex justify-center">
+                        <button type="submit" class="btn-primary px-5 py-3 rounded-lg flex items-center submit-btn text-base md:text-lg">
+                            <i class="fas fa-compress-alt mr-2"></i> Summarize Text
+                            <div class="loader ml-2" id="summarize-loader"></div>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="result-container" class="mt-6 md:mt-8 bg-gray-50 p-4 md:p-6 rounded-lg hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg md:text-xl font-semibold">Results</h3>
+                    <div class="flex space-x-2">
+                        <button id="copy-btn"
+                            class="p-2 bg-white rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-300">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button id="download-btn"
+                            class="p-2 bg-white rounded-lg text-gray-600 hover:bg-gray-100 transition-all duration-300">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="result-content" class="bg-white p-4 rounded-lg border border-gray-100 text-sm md:text-base"></div>
+                <div id="summary-section" class="mt-4"></div>
+                <div id="key-points" class="mt-4"></div>
+            </div>
+        </div>
+
+        <div class="mt-12 md:mt-16">
+            <h3 class="text-xl md:text-2xl font-bold mb-6 md:mb-8 text-center">Why Choose Summarizer<span class="gradient-text">+</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                <div class="card p-5 md:p-6 floating">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4 class="text-lg md:text-xl font-semibold mb-2">Lightning Fast</h4>
+                    <p class="text-gray-600 text-sm md:text-base">Process your media files in seconds with advanced machine learning
+                        algorithms.</p>
+                </div>
+                <div class="card p-5 md:p-6 floating" style="animation-delay: 0.5s">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h4 class="text-lg md:text-xl font-semibold mb-2">100% Secure</h4>
+                    <p class="text-gray-600 text-sm md:text-base">All your files are processed locally. We never store your sensitive data.
+                    </p>
+                </div>
+                <div class="card p-5 md:p-6 floating" style="animation-delay: 1s">
+                    <div class="feature-icon mb-4">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <h4 class="text-lg md:text-xl font-semibold mb-2">High Accuracy</h4>
+                    <p class="text-gray-600 text-sm md:text-base">Our AI models deliver industry-leading precision for all your conversion
+                        needs.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-900 text-white py-8 md:py-12 animate__animated animate__fadeIn">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex flex-col md:flex-row justify-between mb-8">
+                <div class="mb-6 md:mb-0">
+                    <h2 class="text-xl md:text-2xl font-bold mb-4">Summarizer+</h2>
+                    <p class="text-gray-400 max-w-sm text-sm md:text-base">Transform any media into text and get intelligent summaries in
+                        seconds.</p>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
+                    <div>
+                        <h3 class="text-base md:text-lg font-semibold mb-3 md:mb-4">Product</h3>
+                        <ul class="space-y-2 text-gray-400 text-sm md:text-base">
+                            <li><a href="#" class="hover:text-white footer-link">Features</a></li>
+                            <li><a href="#" class="hover:text-white footer-link">Pricing</a></li>
+                            <li><a href="#" class="hover:text-white footer-link">API</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-base md:text-lg font-semibold mb-3 md:mb-4">Support</h3>
+                        <ul class="space-y-2 text-gray-400 text-sm md:text-base">
+                            <li><a href="#" class="hover:text-white footer-link">Documentation</a></li>
+                            <li><a href="#" class="hover:text-white footer-link">Help Center</a></li>
+                            <li><a href="#" class="hover:text-white footer-link">Contact Us</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-base md:text-lg font-semibold mb-3 md:mb-4">Company</h3>
+                        <ul class="space-y-2 text-gray-400 text-sm md:text-base">
+                            <li><a href="#" class="hover:text-white footer-link">About Us</a></li>
+                            <li><a href="#" class="hover:text-white footer-link">Blog</a></li>
+                            <li><a href="#" class="hover:text-white footer-link">Careers</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="pt-6 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm mb-4 md:mb-0">© 2025 Summarizer+. All rights reserved.</p>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white transition-colors duration-300">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for functionality -->
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Hide all tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                
+                // Show selected tab content
+                const tabId = tab.getAttribute('data-tab') + '-tab';
+                document.getElementById(tabId).classList.add('active');
+                
+                // Hide results when switching tabs
+                document.getElementById('result-container').classList.add('hidden');
+            });
+        });
+        
+        // File upload interaction
+        document.querySelectorAll('.file-upload').forEach(upload => {
+            const input = upload.querySelector('input[type="file"]');
+            
+            upload.addEventListener('click', () => {
+                input.click();
+            });
+            
+            upload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                upload.classList.add('border-primary');
+                upload.classList.add('bg-blue-50');
+            });
+            
+            upload.addEventListener('dragleave', () => {
+                upload.classList.remove('border-primary');
+                upload.classList.remove('bg-blue-50');
+            });
+            
+            upload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                upload.classList.remove('border-primary');
+                upload.classList.remove('bg-blue-50');
+                
+                if (e.dataTransfer.files.length) {
+                    input.files = e.dataTransfer.files;
+                    const fileName = e.dataTransfer.files[0].name;
+                    upload.querySelector('p').textContent = fileName;
+                }
+            });
+            
+            input.addEventListener('change', () => {
+                if (input.files.length) {
+                    const fileName = input.files[0].name;
+                    upload.querySelector('p').textContent = fileName;
+                }
+            });
+        });
+        
+        // Form submissions
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Show loading indicator
+                const loader = form.querySelector('.loader');
+                const submitBtn = form.querySelector('.submit-btn');
+                
+                loader.style.display = 'block';
+                submitBtn.disabled = true;
+                
+                // Simulate processing (replace with actual API calls)
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    submitBtn.disabled = false;
+                    
+                    // Show result
+                    showResult();
+                }, 2000);
+            });
+        });
+        
+        function showResult() {
+            const resultContainer = document.getElementById('result-container');
+            const resultContent = document.getElementById('result-content');
+            
+            // Dummy result content
+            resultContent.innerHTML = `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non risus hendrerit venenatis. Pellentesque sit amet hendrerit risus, sed porttitor quam.</p>
+            <p>Magna excepteur officia duis fugiat dolore ipsum. Irure ipsum culpa cupidatat non consequat eiusmod consectetur. Ut magna deserunt dolore veniam non ullamco commodo id deserunt.</p>`;
+            
+            // Show summary section for summarize tab
+            const summarySection = document.getElementById('summary-section');
+            const keyPoints = document.getElementById('key-points');
+            
+            if (document.querySelector('.tab.active').getAttribute('data-tab') === 'summarize') {
+                summarySection.innerHTML = `
+                <h4 class="font-semibold text-base md:text-lg mb-2">Summary</h4>
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <p class="text-sm md:text-base">This text discusses the importance of digital transformation in modern businesses, highlighting key challenges and potential solutions.</p>
+                </div>`;
+                
+                keyPoints.innerHTML = `
+                <h4 class="font-semibold text-base md:text-lg mb-2">Key Points</h4>
+                <ul class="point-list">
+                    <li>Digital transformation is essential for business growth</li>
+                    <li>Companies face implementation and adoption challenges</li>
+                    <li>Leadership buy-in is critical for successful transformation</li>
+                    <li>Data-driven decision making improves outcomes</li>
+                </ul>`;
+                
+                summarySection.classList.remove('hidden');
+                keyPoints.classList.remove('hidden');
+            } else {
+                summarySection.classList.add('hidden');
+                keyPoints.classList.add('hidden');
+            }
+            
+            // Show with animation
+            resultContainer.classList.remove('hidden');
+            resultContainer.classList.add('result-appear');
+        }
+        
+        // Copy to clipboard functionality
+        document.getElementById('copy-btn').addEventListener('click', () => {
+            const resultContent = document.getElementById('result-content').innerText;
+            navigator.clipboard.writeText(resultContent).then(() => {
+                // Show success feedback
+                const copyBtn = document.getElementById('copy-btn');
+                copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                copyBtn.classList.add('success-animation');
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                    copyBtn.classList.remove('success-animation');
+                }, 2000);
+            });
+        });
+        
+        // Download functionality
+        document.getElementById('download-btn').addEventListener('click', () => {
+            const resultContent = document.getElementById('result-content').innerText;
+            const blob = new Blob([resultContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'summarizer-result.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            // Show success feedback
+            const downloadBtn = document.getElementById('download-btn');
+            downloadBtn.innerHTML = '<i class="fas fa-check"></i>';
+            downloadBtn.classList.add('success-animation');
+            
+            setTimeout(() => {
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+                downloadBtn.classList.remove('success-animation');
+            }, 2000);
+        });
+        
+        // Mobile menu functionality
+        const mobileMenuButton = document.querySelector('.mobile-menu-button');
+        const navMenu = document.querySelector('.nav-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            
+            // Change icon based on menu state
+            const icon = mobileMenuButton.querySelector('i');
+            if (navMenu.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+        
+        // Switch Background Color
+        document.querySelector('.bttn').addEventListener('click', function() {
+            document.body.classList.toggle('bg-gray-900');
+            
+            if (document.body.classList.contains('bg-gray-900')) {
+                document.body.style.background = 'linear-gradient(135deg, #1F2937 0%, #111827 100%)';
+                document.body.style.color = 'white';
+            } else {
+                document.body.style.background = 'linear-gradient(135deg, #F9FAFB 0%, #E5E7EB 100%)';
+                document.body.style.color = 'black';
+            }
+        });
+        
+        // Add a chatbot button function
+        function aa() {
+            document.getElementById('sumz').style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Summarizer+</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Arial', sans-serif;
+    }
+    
+    body {
+      background-color: #000;
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    #canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+    
+    .content {
+      z-index: 2;
+      text-align: center;
+      position: relative;
+    }
+    
+    .logo {
+      font-size: 3.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      background: linear-gradient(90deg, #4169E1, #FF69B4);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      position: relative;
+    }
+    
+    .logo::after {
+      content: "+";
+      position: absolute;
+      background: linear-gradient(90deg, #FF69B4, #FFD700);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .tagline {
+      font-size: 1.2rem;
+      margin-bottom: 3rem;
+      color: #ccc;
+    }
+    
+    .btn {
+      background-color: transparent;
+      color: white;
+      border: 2px solid white;
+      padding: 12px 32px;
+      font-size: 1rem;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-block;
+      font-weight: 600;
+    }
+    
+    .btn:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .footer {
+      position: fixed;
+      bottom: 20px;
+      font-size: 0.9rem;
+      opacity: 0.7;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  
+  <div class="content">
+    <h1 class="logo">Summarizer<span class="plus">+</span></h1>
+    <p class="tagline">Transform complexity into clarity</p>
+    <a href="#" class="btn" onclick="abc()">Get Started</a>
+  </div>
+  
+  <div class="footer">
+    Click and drag anywhere to interact with the fluid
+  </div>
+
+  <script>
+    // Interactive fluid canvas
+    let btn=document.querySelector(".btn")
+    function abc(){
+        window.location.href="/register"
+    }
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    
+    // Particle class for fluid simulation
+    class Particle {
+      constructor() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.vx = Math.random() * 2 - 1;
+        this.vy = Math.random() * 2 - 1;
+        this.radius = Math.random() * 5 + 2;
+        this.color = this.getRandomColor();
+        this.alpha = Math.random() * 0.6 + 0.1;
+      }
+      
+      getRandomColor() {
+        const colors = [
+          '64, 105, 225',  // Royal Blue
+          '147, 112, 219', // Medium Purple
+          '255, 105, 180', // Hot Pink
+          '75, 0, 130',    // Indigo
+          '138, 43, 226'   // Blue Violet
+        ];
+        return colors[Math.floor(Math.random() * colors.length)];
+      }
+      
+      update(mouseX, mouseY, isMouseDown) {
+        // Basic motion
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        // Bounce off edges
+        if (this.x < 0 || this.x > width) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
+        
+        // Mouse interaction
+        if (mouseX && mouseY) {
+          const dx = mouseX - this.x;
+          const dy = mouseY - this.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < 150) {
+            const forceDirectionX = dx / distance;
+            const forceDirectionY = dy / distance;
+            const force = (150 - distance) / 150;
+            
+            if (isMouseDown) {
+              // Pull particles toward mouse when dragging
+              this.vx += forceDirectionX * force * 0.6;
+              this.vy += forceDirectionY * force * 0.6;
+            } else {
+              // Push particles away from mouse when moving
+              this.vx -= forceDirectionX * force * 0.3;
+              this.vy -= forceDirectionY * force * 0.3;
+            }
+          }
+        }
+        
+        // Add some damping
+        this.vx *= 0.99;
+        this.vy *= 0.99;
+        
+        // Speed limit
+        const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        if (speed > 2) {
+          this.vx = (this.vx / speed) * 2;
+          this.vy = (this.vy / speed) * 2;
+        }
+      }
+      
+      draw(ctx) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
+        ctx.fill();
+      }
+    }
+    
+    // Create particles
+    const particleCount = 150;
+    const particles = [];
+    
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
+    }
+    
+    // Mouse tracking
+    let mouseX = null;
+    let mouseY = null;
+    let isMouseDown = false;
+    
+    window.addEventListener('mousemove', (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+    
+    window.addEventListener('mousedown', () => {
+      isMouseDown = true;
+    });
+    
+    window.addEventListener('mouseup', () => {
+      isMouseDown = false;
+    });
+    
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+    
+    // Animation loop
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      
+      // Update and draw particles
+      particles.forEach(particle => {
+        particle.update(mouseX, mouseY, isMouseDown);
+        particle.draw(ctx);
+      });
+      
+      // Draw connections between nearby particles
+      particles.forEach((p1, i) => {
+        for (let j = i + 1; j < particles.length; j++) {
+          const p2 = particles[j];
+          const dx = p1.x - p2.x;
+          const dy = p1.y - p2.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < 100) {
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = `rgba(${p1.color}, ${0.2 * (1 - distance / 100)})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
+        }
+      });
+      
+      requestAnimationFrame(animate);
+    }
+    
+    animate();
+  </script>
+</body>
+</html>

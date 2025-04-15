@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summarizer+ AI Assistant</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-dark: #4F46E5;
+            --secondary: #EC4899;
+            --accent: #8B5CF6;
+            --light: #111111;
+            --dark: #F9FAFB;
+
+            /* Dark theme specific colors */
+            --dark-bg: #080808;
+            --dark-surface: #121212;
+            --dark-surface-elevated: #1A1A1A;
+            --dark-input: #222222;
+            --dark-border: #2A2A2A;
+            --dark-text: #E5E7EB;
+            --dark-text-secondary: #9CA3AF;
+            --dark-shadow: rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #080808 0%, #121212 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: var(--dark-text);
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 30px rgba(236, 72, 153, 0.2);
+        }
+
+        .card {
+            background: var(--dark-surface);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px var(--dark-shadow);
+            transition: all 0.3s ease;
+            border: 1px solid var(--dark-border);
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.6);
+        }
+
+        .main-container {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            height: calc(100vh - 80px);
+            padding: 1rem;
+            gap: 1.5rem;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            height: 100%;
+        }
+
+        .user-profile {
+            width: 300px;
+            background: var(--dark-surface);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px var(--dark-shadow);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            border: 1px solid var(--dark-border);
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .profile-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary) 0%, #F472B6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+        }
+
+        .profile-info h3 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--dark-text);
+        }
+
+        .profile-info p {
+            color: var(--dark-text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--dark-border);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--primary);
+            text-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--dark-text-secondary);
+        }
+
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-item:hover {
+            background-color: var(--dark-surface-elevated);
+            transform: translateX(2px);
+        }
+
+        .action-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.875rem;
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+        }
+
+        .action-text {
+            font-size: 0.9rem;
+            color: var(--dark-text);
+        }
+
+        .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            background-color: var(--dark-surface);
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 -10px 25px -5px var(--dark-shadow);
+            border: 1px solid var(--dark-border);
+            border-bottom: none;
+        }
+
+        .message {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .bot-avatar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .user-avatar {
+            background: linear-gradient(135deg, var(--secondary) 0%, #F472B6 100%);
+            color: white;
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.3);
+        }
+
+        .message-content {
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            max-width: 80%;
+            color: var(--dark-text);
+        }
+
+        .bot-message .message-content {
+            background-color: var(--dark-surface-elevated);
+            border-top-left-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .user-message .message-content {
+            background: var(--dark-input);
+            border: 1px solid var(--dark-border);
+            border-top-right-radius: 4px;
+            margin-left: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: var(--dark-text-secondary);
+            margin-top: 0.5rem;
+            text-align: right;
+        }
+
+        .chat-footer {
+            padding: 1.5rem;
+            background: var(--dark-surface);
+            border-top: 1px solid var(--dark-border);
+            border-radius: 0 0 16px 16px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid var(--dark-border);
+            border-top: none;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border-radius: 30px;
+            border: 1px solid var(--dark-border);
+            background-color: var(--dark-input);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            color: var(--dark-text);
+        }
+
+        .chat-input::placeholder {
+            color: var(--dark-text-secondary);
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+        }
+
+        .action-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: var(--dark-input);
+            color: var(--dark-text-secondary);
+            border: none;
+        }
+
+        .action-button:hover {
+            background-color: #333;
+            transform: translateY(-2px);
+        }
+
+        .send-button {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            width: 48px;
+            height: 48px;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.6);
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: var(--dark-surface-elevated);
+            border-radius: 16px;
+            width: fit-content;
+            margin-bottom: 1.5rem;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--dark-text-secondary);
+            border-radius: 50%;
+            margin: 0 3px;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .summarizer-btn {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+            white-space: nowrap;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .summarizer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.5);
+        }
+
+        /* Custom scrollbar for dark theme */
+        .chat-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-body::-webkit-scrollbar-track {
+            background: var(--dark-surface);
+        }
+
+        .chat-body::-webkit-scrollbar-thumb {
+            background-color: #333;
+            border-radius: 20px;
+        }
+
+        .chat-body::-webkit-scrollbar-thumb:hover {
+            background-color: #444;
+        }
+
+        /* Nav tweaks for dark theme */
+        nav {
+            background: var(--dark-surface) !important;
+            border-bottom: 1px solid var(--dark-border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        button.px-4.py-2.rounded-lg {
+            color: var(--dark-text);
+        }
+
+        button.px-4.py-2.rounded-lg.bg-gray-100 {
+            background-color: var(--dark-input) !important;
+            color: var(--dark-text);
+        }
+
+        button.px-4.py-2.rounded-lg.bg-gray-100:hover {
+            background-color: #333 !important;
+        }
+
+        /* Subtle glow effects */
+        .user-profile,
+        .chat-body,
+        .chat-footer {
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .bot-message .message-content,
+        .user-message .message-content {
+            position: relative;
+        }
+
+        .bot-message .message-content::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 16px;
+            border-top-left-radius: 4px;
+            box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.1);
+            pointer-events: none;
+        }
+
+        .user-message .message-content::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 16px;
+            border-top-right-radius: 4px;
+            box-shadow: inset 0 0 0 1px rgba(236, 72, 153, 0.1);
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="bg-white shadow-sm py-4">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold gradient-text">Summarizer<span class="text-secondary">+</span></h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 main">
+                    SUMMARIZER+
+                </button>
+                <button class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900">
+                    <i class="fas fa-question-circle mr-1"></i> Help
+                </button>
+                <button class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">
+                    <i class="fas fa-cog mr-1"></i> Settings
+                </button>
+
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <div class="chat-container">
+            <div class="chat-body">
+                <div class="message bot-message">
+                    <div class="message-avatar bot-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Hello! How can I assist you today?</p>
+                        <div class="message-time">10:30 AM</div>
+                    </div>
+                </div>
+
+                <div class="message user-message">
+                    <div class="message-avatar user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>Can you tell me about your features?</p>
+                        <div class="message-time">10:31 AM</div>
+                    </div>
+                </div>
+
+                <div class="message bot-message">
+                    <div class="message-avatar bot-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>I can answer questions, provide recommendations, assist with tasks, and much more. What would
+                            you like to know about?</p>
+                        <div class="message-time">10:31 AM</div>
+                    </div>
+                </div>
+
+                <div class="message user-message">
+                    <div class="message-avatar user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>How does the summarizer feature work?</p>
+                        <div class="message-time">10:32 AM</div>
+                    </div>
+                </div>
+
+                <div class="message bot-message">
+                    <div class="message-avatar bot-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>The summarizer feature takes your text and creates a concise summary of the key points. Just
+                            type or paste your content and click the Summarizer button!</p>
+                        <div class="message-time">10:32 AM</div>
+                    </div>
+                </div>
+
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+
+            <div class="chat-footer">
+                <input type="text" class="chat-input" id="chat-input" placeholder="Type your message here...">
+
+                <button class="summarizer-btn">
+                    <i class="fas fa-magic mr-1"></i> Summarizer
+                </button>
+
+                <button class="send-button action-button">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="user-profile">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="profile-info">
+                    <h3>Alex Johnson</h3>
+                    <p>Premium User</p>
+                </div>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <div class="stat-value one">42</div>
+                    <div class="stat-label">Chats</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">15</div>
+                    <div class="stat-label">Summaries</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">0</div>
+                    <div class="stat-label">Favorites</div>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <div class="action-item">
+                    <div class="action-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="action-text">Chat History</div>
+                </div>
+                <div class="action-item">
+                    <div class="action-icon">
+                        <i class="fas fa-bookmark"></i>
+                    </div>
+                    <div class="action-text">Saved Responses</div>
+                </div>
+                <div class="action-item">
+                    <div class="action-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <div class="action-text">Theme Options</div>
+                </div>
+                <div class="action-item">
+                    <div class="action-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="action-text">Premium Features</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        let main = document.querySelector(".main")
+        const chatInput = document.getElementById("chat-input");
+        const sendButton = document.querySelector(".send-button");
+        const summarizeButton = document.querySelector(".summarizer-btn");
+
+        // Set up the Summarizer button to open a new page
+        main.addEventListener("click", () => {
+            window.location.href = "/main";
+        });
+
+        // Function to add user message to chat
+        function addUserMessage(message) {
+            const chatBody = document.querySelector(".chat-body");
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message", "user-message");
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="message-content">
+                    <p>${message}</p>
+                    <div class="message-time">${timeString}</div>
+                </div>
+            `;
+
+            chatBody.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Function to add bot message to chat
+        function addBotMessage(message) {
+            const chatBody = document.querySelector(".chat-body");
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message", "bot-message");
+
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+
+            messageDiv.innerHTML = `
+                <div class="message-avatar bot-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <p>${message}</p>
+                    <div class="message-time">${timeString}</div>
+                </div>
+            `;
+
+            chatBody.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Function to show typing indicator
+        function showTypingIndicator() {
+            const chatBody = document.querySelector(".chat-body");
+            const typingIndicator = document.querySelector(".typing-indicator");
+
+            if (!typingIndicator) {
+                const indicator = document.createElement("div");
+                indicator.classList.add("typing-indicator");
+                indicator.innerHTML = `
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                `;
+                chatBody.appendChild(indicator);
+            }
+            scrollToBottom();
+        }
+
+        // Function to hide typing indicator
+        function hideTypingIndicator() {
+            const typingIndicator = document.querySelector(".typing-indicator");
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        const apikey = "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";
+
+        // Send button click handler
+        sendButton.addEventListener("click", function () {
+            const userMessage = chatInput.value.trim();
+
+            if (!userMessage) {
+                return;
+            }
+
+            // Add user message to chat
+            addUserMessage(userMessage);
+
+            // Clear input field
+            chatInput.value = "";
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Send request to API
+            fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${apikey}`,
+                },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
+                    messages: [
+                        {
+                            role: "user",
+                            content: userMessage,
+                        },
+                    ],
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    // Hide typing indicator
+                    hideTypingIndicator();
+
+                    const messageContent = data.choices[0].message.content;
+
+                    // Add bot message to chat
+                    addBotMessage(messageContent);
+
+                    // Check if the response contains a link - if so, fetch additional information
+                    if (messageContent.includes("https://")) {
+                        // Show typing indicator again
+                        showTypingIndicator();
+
+                        fetch("https://api.groq.com/openai/v1/chat/completions", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${apikey}`,
+                            },
+                            body: JSON.stringify({
+                                model: "llama-3.3-70b-versatile",
+                                messages: [
+                                    {
+                                        role: "user",
+                                        content: `Bring information about this: ${userMessage}`,
+                                    },
+                                ],
+                            }),
+                        })
+                            .then((response) => response.json())
+                            .then((res) => {
+                                // Hide typing indicator
+                                hideTypingIndicator();
+
+                                // Add additional bot message
+                                addBotMessage(res.choices[0].message.content);
+                            })
+                            .catch((error) => {
+                                hideTypingIndicator();
+                                console.error("Error:", error);
+                            });
+                    }
+                })
+                .catch((error) => {
+                    hideTypingIndicator();
+                    console.error("Error:", error);
+                    addBotMessage(`Error: ${error.message}`);
+                });
+        });
+
+        // Handle Enter key press in the input field
+        chatInput.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                sendButton.click();
+            }
+        });
+
+        // Summarizer button handling
+        summarizeButton.addEventListener("click", function () {
+            const userContent = chatInput.value.trim();
+
+
+            addUserMessage(`Summarize: ${userContent}`);
+            chatInput.value = "";
+
+            showTypingIndicator();
+
+            // Send request to API for summarization
+            fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${apikey}`,
+                },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
+                    messages: [
+                        {
+                            role: "user",
+                            content: `Summarize this text: ${userContent}`,
+                        },
+                    ],
+                }),
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    hideTypingIndicator();
+                    const summary = data.choices[0].message.content;
+                    addBotMessage(summary);
+                })
+                .catch((error) => {
+                    hideTypingIndicator();
+                    console.error("Error:", error);
+                    addBotMessage(`Error with summarization: ${error.message}`);
+                });
+        });
+        function countElements(sectionSelector, elementSelector) {
+            const section = document.querySelector(sectionSelector);
+            if (!section) {
+                console.error(`Section not found: ${sectionSelector}`);
+                return 0;
+            }
+            const elements = section.querySelectorAll(elementSelector);
+            return elements.length;
+        }
+        // Scroll to bottom of chat
+        function scrollToBottom() {
+            const chatBody = document.querySelector(".chat-body");
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // Additional initialization
+        document.addEventListener("DOMContentLoaded", function () {
+           
+            // Hide typing indicator initially
+            const typingIndicator = document.querySelector(".typing-indicator");
+            if (typingIndicator) {
+                typingIndicator.style.display = "none";
+            }
+
+            // Get DOM elements for user profile
+            const profileActions = document.querySelectorAll(".action-item");
+            const profileAvatar = document.querySelector(".profile-avatar");
+            const userName = document.querySelector(".profile-info h3");
+            const userStatus = document.querySelector(".profile-info p");
+            const statValues = document.querySelectorAll(".stat-value");
+            const statLabels = document.querySelectorAll(".stat-label");
+
+
+            // Sample user data
+            let userData = {
+                name: "Alex Johnson",
+                status: "Premium User",
+                avatarColor: "linear-gradient(135deg, #EC4899 0%, #F472B6 100%)",
+                stats: [
+                    { value: 42, label: "Chats" },
+                    { value: 15, label: "Summaries" },
+                    { value: 0, label: "Favorites" },
+                ],
+                chatHistory: [
+                    { title: "Website development", date: "April 10, 2025" },
+                    { title: "Marketing ideas", date: "April 8, 2025" },
+                    { title: "Product research", date: "April 5, 2025" },
+                ],
+                savedResponses: [
+                    { title: "Project timeline", date: "April 9, 2025" },
+                    { title: "Email template", date: "April 7, 2025" },
+                ],
+                theme: "dark",
+                premiumUntil: "May 15, 2025",
+            };
+
+            // Function to update user profile UI
+            function updateUserProfile() {
+                // Update profile header
+                userName.textContent = userData.name;
+                userStatus.textContent = userData.status;
+                profileAvatar.style.background = userData.avatarColor;
+
+                // Update stats
+                userData.stats.forEach((stat, index) => {
+                    if (statValues[index]) statValues[index].textContent = stat.value;
+                    if (statLabels[index]) statLabels[index].textContent = stat.label;
+                });
+            }
+
+            // Add event listeners for profile actions
+            profileActions.forEach((action, index) => {
+                action.addEventListener("click", function () {
+                    const actionType = this.querySelector(".action-text").textContent;
+
+                    // Handle different actions
+                    switch (actionType) {
+                        case "Chat History":
+                            showHistory(userData.chatHistory);
+                            break;
+                        case "Saved Responses":
+                            showSavedResponses(userData.savedResponses);
+                            break;
+                        case "Theme Options":
+                            toggleTheme();
+                            break;
+                        case "Premium Features":
+                            showPremiumFeatures();
+                            break;
+                    }
+                });
+            });
+
+            // Function to show chat history
+            function showHistory(history) {
+                let historyMessage = "Your Recent Chats:\n\n";
+                history.forEach(chat => {
+                    historyMessage += `• ${chat.title} (${chat.date})\n`;
+                });
+
+                addBotMessage(historyMessage);
+            }
+
+            // Function to show saved responses
+            function showSavedResponses(responses) {
+                let responsesMessage = "Your Saved Responses:\n\n";
+                responses.forEach(response => {
+                    responsesMessage += `• ${response.title} (${response.date})\n`;
+                });
+
+                addBotMessage(responsesMessage);
+            }
+
+            // Function to toggle theme (for demo purposes)
+            function toggleTheme() {
+                addBotMessage("Theme settings are currently set to 'Dark Mode'. THE feature of changing theme is not avaliable yet (sorry for this)");
+            }
+
+            // Function to show premium features
+            function showPremiumFeatures() {
+                addBotMessage(`Your premium subscription is active until ${userData.premiumUntil}. Premium features include: Advanced summarization, and Priority response time.`);
+            }
+
+            // Initialize user profile
+            updateUserProfile();
+
+            // Focus on chat input
+            chatInput.focus();
+
+            // Welcome message
+            setTimeout(() => {
+                hideTypingIndicator();
+                addBotMessage("Welcome back, Alex! How can I assist you today? Need a summary of any document or text?");
+            }, 1500);
+
+            // Make it responsive
+            function handleResize() {
+                const mainContainer = document.querySelector(".main-container");
+                const userProfile = document.querySelector(".user-profile");
+
+                if (window.innerWidth < 768) {
+                    mainContainer.style.flexDirection = "column";
+                    userProfile.style.width = "100%";
+                    userProfile.style.marginTop = "1rem";
+                } else {
+                    mainContainer.style.flexDirection = "row";
+                    userProfile.style.width = "300px";
+                    userProfile.style.marginTop = "0";
+                }
+            }
+
+            // Initial check and event listener for resize
+            handleResize();
+            window.addEventListener("resize", handleResize);
+
+            // Handle help button
+            const helpButton = document.querySelector('button:first-of-type');
+            helpButton.addEventListener('click', () => {
+                addBotMessage("Need help? Here are some tips:\n\n• Type any text and press Enter to chat with me\n• Use the Summarizer button to condense large blocks of text\n• Check your profile for chat history and saved responses\n• Upgrade for premium features like file analysis");
+            });
+
+            // Handle settings button
+            const settingsButton = document.querySelector('button:last-of-type');
+            settingsButton.addEventListener('click', () => {
+                addBotMessage("Available settings:\n\n• Theme: Dark (current) / Light\n• Notification preferences\n• API integrations\n• Language: English (current)\n\nWhich setting would you like to adjust?");
+            });
+        });
+    </script>
+</body>
+
+</html>

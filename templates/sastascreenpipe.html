@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screenpipe Frontend</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366F1;
+            --primary-dark: #4F46E5;
+            --secondary: #EC4899;
+            --accent: #8B5CF6;
+            --light: #F9FAFB;
+            --dark: #1F2937;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #F9FAFB 0%, #E5E7EB 100%);
+            min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        h1,
+        h3,
+        h5 {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            border: none;
+            margin-bottom: 2rem;
+        }
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn {
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-success {
+            background: linear-gradient(90deg, #10B981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px rgba(16, 185, 129, 0.5);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(90deg, #6B7280 0%, #4B5563 100%);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px rgba(107, 114, 128, 0.5);
+        }
+
+        .btn-info {
+            background: linear-gradient(90deg, #0EA5E9 0%, #0284C7 100%);
+            color: white;
+        }
+
+        .btn-info:hover {
+            transform: translateY(-3px);
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(14, 165, 233, 0.5);
+        }
+
+        .btn-warning {
+            background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            transform: translateY(-3px);
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(245, 158, 11, 0.5);
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%, -50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8d7da;
+            border-radius: 12px;
+            display: none;
+            box-shadow: 0 4px 15px -5px rgba(220, 53, 69, 0.2);
+            border: 1px solid #f5c2c7;
+        }
+
+        .spinner-border {
+            margin-right: 8px;
+        }
+
+        .feature-icon {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            transition: all 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover .feature-icon {
+            transform: rotate(15deg) scale(1.1);
+        }
+
+        .feature-icon::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.2) 100%);
+            top: -100%;
+            left: -100%;
+            transition: all 0.6s ease;
+        }
+
+        .card:hover .feature-icon::before {
+            top: 0;
+            left: 0;
+        }
+
+        .tab {
+            cursor: pointer;
+            padding: 1rem;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .tab:hover::after {
+            width: 80%;
+        }
+
+        .tab.active {
+            background-color: white;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .tab.active::after {
+            width: 90%;
+        }
+
+        .alert {
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            border: none;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+            color: #065F46;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+            color: #B91C1C;
+        }
+
+        .alert-info {
+            background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+            color: #1E40AF;
+        }
+
+        .list-group {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .list-group-item {
+            border-left: none;
+            border-right: none;
+            border-color: #E5E7EB;
+            padding: 1rem 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .list-group-item:first-child {
+            border-top: none;
+        }
+
+        .list-group-item:last-child {
+            border-bottom: none;
+        }
+
+        .list-group-item:hover {
+            background-color: rgba(99, 102, 241, 0.05);
+            transform: translateX(5px);
+        }
+
+        #framesLoading {
+            padding: 2rem;
+            color: var(--primary);
+        }
+
+        .loader {
+            border: 3px solid rgba(99, 102, 241, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--primary);
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Pulse animation for important elements */
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+            }
+        }
+
+        /* Animation for result container */
+        .result-appear {
+            animation: resultAppear 0.8s forwards;
+        }
+
+        @keyframes resultAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Animation for success feedback */
+        .success-animation {
+            animation: successPop 0.5s ease;
+        }
+
+        @keyframes successPop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        /* Floating animation for cards */
+        .floating {
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        /* Progress bar animation */
+        .progress-bar {
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+
+        /* Formatted content styling */
+        .formatted-content {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 0.75rem;
+        }
+
+        .section-content {
+            line-height: 1.6;
+        }
+
+        .point-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .point-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+
+        .point-list li:before {
+            content: '•';
+            color: var(--accent);
+            position: absolute;
+            left: 0.25rem;
+            font-weight: bold;
+        }
+
+        /* File upload styling */
+        .file-upload {
+            border: 2px dashed #E5E7EB;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary);
+            background-color: rgba(99, 102, 241, 0.05);
+            transform: scale(1.01);
+        }
+
+        /* Animation utilities */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #frameDetails,
+        #result {
+            animation: fadeInUp 0.6s ease;
+        }
+
+        pre {
+            background-color: #F3F4F6;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        strong {
+            color: var(--primary-dark);
+        }
+
+        .btn-close {
+            background-color: transparent;
+            box-shadow: none;
+        }
+
+        .btn-close:hover {
+            transform: rotate(90deg);
+        }
+
+        /* Card header styling*/
+        .card-header {
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px 16px 0 0 !important;
+            padding: 1rem 1.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Animate elements when they appear */
+        .animate__animated {
+            animation-duration: 1s;
+            animation-fill-mode: both;
+        }
+
+        .animate__fadeIn {
+            animation-name: fadeIn;
+        }
+
+        .animate__fadeInDown {
+            animation-name: fadeInDown;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translate3d(0, -20px, 0);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate3d(0, 0, 0);
+            }
+        }
+
+        /* Dark theme toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(20deg);
+        }
+
+        /* Dark Theme Styles */
+        body.dark-theme {
+            background: linear-gradient(135deg, #121826 0%, #1F2937 100%);
+            color: #E5E7EB;
+        }
+
+        body.dark-theme .card {
+            background: #1F2937;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-theme .card-header {
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        body.dark-theme .list-group-item {
+            background-color: #1F2937;
+            color: #E5E7EB;
+            border-color: #374151;
+        }
+
+        body.dark-theme .list-group-item:hover {
+            background-color: #2D3748;
+        }
+
+        body.dark-theme pre {
+            background-color: #111827;
+            color: #E5E7EB;
+        }
+
+        body.dark-theme .alert-info {
+            background: linear-gradient(135deg, #1E3A8A 0%, #1E40AF 100%);
+            color: #BFDBFE;
+        }
+
+        body.dark-theme .alert-success {
+            background: linear-gradient(135deg, #065F46 0%, #047857 100%);
+            color: #A7F3D0;
+        }
+
+        body.dark-theme .alert-danger {
+            background: linear-gradient(135deg, #7F1D1D 0%, #991B1B 100%);
+            color: #FECACA;
+        }
+
+        body.dark-theme .tab.active {
+            background-color: #1F2937;
+            color: var(--primary);
+        }
+
+        body.dark-theme strong {
+            color: #93C5FD;
+        }
+
+        body.dark-theme .error-message {
+            background-color: #7F1D1D;
+            color: #FECACA;
+            border-color: #991B1B;
+        }
+
+        body.dark-theme .file-upload {
+            border-color: #374151;
+        }
+
+        body.dark-theme .file-upload:hover {
+            border-color: var(--primary);
+            background-color: rgba(99, 102, 241, 0.1);
+        }
+
+        body.dark-theme .btn-close {
+            filter: invert(1);
+        }
+
+        body.dark-theme .section {
+            border-bottom: 1px solid #374151;
+        }
+    </style>
+</head>
+
+<body>
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <div class="container mt-4">
+        <h1>Screenpipe Content Extractor</h1>
+
+        <div class="alert alert-info" id="statusAlert">
+            Checking API connection...
+        </div>
+
+        <div class="mb-3">
+            <button id="launchBtn" class="btn btn-primary me-2">Launch Screenpipe</button>
+            <button id="captureBtn" class="btn btn-success me-2">Capture New Content</button>
+            <button id="refreshFramesBtn" class="btn btn-secondary">Refresh Frames</button>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <h3>Recent Frames</h3>
+        <div id="framesLoading" class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            Loading frames...
+        </div>
+        <ul id="framesList" class="list-group mb-3"></ul>
+
+        <div id="frameDetails" class="card" style="display: none;">
+            <div class="card-body">
+                <h5 class="card-title">Frame Details</h5>
+                <p><strong>Frame ID:</strong> <span id="frameId"></span></p>
+                <p><strong>App:</strong> <span id="frameApp"></span></p>
+                <p><strong>Timestamp:</strong> <span id="frameTime"></span></p>
+                <p><strong>Preview:</strong> <span id="framePreview"></span></p>
+                <div class="mt-3">
+                    <button id="analyzeBtn" class="btn btn-info me-2">Analyze</button>
+                    <button id="summarizeBtn" class="btn btn-info me-2">Summarize</button>
+                    <button id="saveBtn" class="btn btn-warning">Save to File</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="result" class="mt-3" style="display: none;">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <h5 class="mb-0">Result</h5>
+                    <button id="closeResultBtn" class="btn-close"></button>
+                </div>
+                <div class="card-body">
+                    <pre id="resultText" class="mb-0" style="white-space: pre-wrap;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- The rest of the HTML remains unchanged -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Configuration
+        const apiUrl = 'http://localhost:7000/api';
+        let apiConnected = false;
+
+        // Theme toggling
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
+
+        // Check if user has a theme preference stored
+        const savedTheme = localStorage.getItem('screenpipe-theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+
+            if (document.body.classList.contains('dark-theme')) {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                localStorage.setItem('screenpipe-theme', 'dark');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+                localStorage.setItem('screenpipe-theme', 'light');
+            }
+        });
+
+        // Error handling function
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        }
+
+        // Check API connection
+        async function checkApiConnection() {
+            try {
+                const response = await axios.get('http://localhost:7000/');
+                document.getElementById('statusAlert').innerHTML =
+                    '<strong>Connected to API:</strong> Screenpipe service is running';
+                document.getElementById('statusAlert').className = 'alert alert-success';
+                apiConnected = true;
+                return true;
+            } catch (error) {
+                document.getElementById('statusAlert').innerHTML =
+                    '<strong>API Connection Failed:</strong> Make sure the Flask server is running on port 7000';
+                document.getElementById('statusAlert').className = 'alert alert-danger';
+                apiConnected = false;
+                return false;
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('launchBtn').addEventListener('click', async () => {
+            if (!apiConnected && !(await checkApiConnection())) {
+                showError('Cannot connect to API. Please make sure the server is running.');
+                return;
+            }
+
+            try {
+                document.getElementById('launchBtn').disabled = true;
+                document.getElementById('launchBtn').innerHTML =
+                    '<span class="spinner-border spinner-border-sm"></span> Launching...';
+
+                const response = await axios.get(`${apiUrl}/launch_screenpipe`);
+                alert(response.data.message);
+            } catch (error) {
+                console.error('Error launching Screenpipe:', error);
+                showError('Error launching Screenpipe: ' + (error.response?.data?.message || error.message));
+            } finally {
+                document.getElementById('launchBtn').disabled = false;
+                document.getElementById('launchBtn').textContent = 'Launch Screenpipe';
+            }
+        });
+
+        document.getElementById('captureBtn').addEventListener('click', async () => {
+            if (!apiConnected && !(await checkApiConnection())) {
+                showError('Cannot connect to API. Please make sure the server is running.');
+                return;
+            }
+
+            try {
+                document.getElementById('captureBtn').disabled = true;
+                document.getElementById('captureBtn').innerHTML =
+                    '<span class="spinner-border spinner-border-sm"></span> Capturing...';
+
+                const response = await axios.post(`${apiUrl}/capture`);
+                if (response.data.status === 'error') {
+                    showError(response.data.message);
+                    return;
+                }
+                showFrameDetails(response.data);
+                await loadFrames(); // Refresh the frames list
+            } catch (error) {
+                console.error('Error capturing content:', error);
+                showError('Error capturing content: ' + (error.response?.data?.message || error.message));
+            } finally {
+                document.getElementById('captureBtn').disabled = false;
+                document.getElementById('captureBtn').textContent = 'Capture New Content';
+            }
+        });
+
+        document.getElementById('refreshFramesBtn').addEventListener('click', () => {
+            loadFrames();
+        });
+
+        document.getElementById('closeResultBtn').addEventListener('click', () => {
+            document.getElementById('result').style.display = 'none';
+        });
+
+        async function loadFrames() {
+            if (!apiConnected && !(await checkApiConnection())) {
+                document.getElementById('framesLoading').style.display = 'none';
+                showError('Cannot connect to API. Please make sure the server is running.');
+                return;
+            }
+
+            try {
+                document.getElementById('framesLoading').style.display = 'block';
+                document.getElementById('framesList').innerHTML = '';
+
+                const response = await axios.get(`${apiUrl}/frames`);
+                const frames = response.data;
+
+                const framesList = document.getElementById('framesList');
+                framesList.innerHTML = '';
+
+                if (frames.length === 0) {
+                    framesList.innerHTML = '<li class="list-group-item text-center">No frames available</li>';
+                } else {
+                    frames.forEach(frame => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = `[${frame.timestamp}] ${frame.app_type}: ${frame.preview}`;
+                        li.style.cursor = 'pointer';
+                        li.addEventListener('click', () => showFrameDetails(frame));
+                        framesList.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading frames:', error);
+                showError('Error loading frames: ' + (error.response?.data?.message || error.message));
+            } finally {
+                document.getElementById('framesLoading').style.display = 'none';
+            }
+        }
+
+        function showFrameDetails(frame) {
+            document.getElementById('frameId').textContent = frame.frame_id;
+            document.getElementById('frameApp').textContent = frame.app_type;
+            document.getElementById('frameTime').textContent = frame.timestamp;
+            document.getElementById('framePreview').textContent = frame.preview || frame.content;
+            document.getElementById('frameDetails').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+
+            document.getElementById('analyzeBtn').onclick = async () => {
+                try {
+                    document.getElementById('analyzeBtn').disabled = true;
+                    document.getElementById('analyzeBtn').innerHTML =
+                        '<span class="spinner-border spinner-border-sm"></span> Analyzing...';
+
+                    const response = await axios.post(`${apiUrl}/process/${frame.frame_id}`, { action: 'analyze' });
+                    showResult(response.data.result);
+                } catch (error) {
+                    showError('Error processing frame: ' + (error.response?.data?.message || error.message));
+                } finally {
+                    document.getElementById('analyzeBtn').disabled = false;
+                    document.getElementById('analyzeBtn').textContent = 'Analyze';
+                }
+            };
+
+            document.getElementById('summarizeBtn').onclick = async () => {
+                try {
+                    document.getElementById('summarizeBtn').disabled = true;
+                    document.getElementById('summarizeBtn').innerHTML =
+                        '<span class="spinner-border spinner-border-sm"></span> Summarizing...';
+
+                    const response = await axios.post(`${apiUrl}/process/${frame.frame_id}`, { action: 'summarize' });
+                    showResult(response.data.result);
+                } catch (error) {
+                    showError('Error processing frame: ' + (error.response?.data?.message || error.message));
+                } finally {
+                    document.getElementById('summarizeBtn').disabled = false;
+                    document.getElementById('summarizeBtn').textContent = 'Summarize';
+                }
+            };
+
+            document.getElementById('saveBtn').onclick = async () => {
+                try {
+                    document.getElementById('saveBtn').disabled = true;
+                    document.getElementById('saveBtn').innerHTML =
+                        '<span class="spinner-border spinner-border-sm"></span> Saving...';
+
+                    const response = await axios.post(`${apiUrl}/save/${frame.frame_id}`);
+                    alert(response.data.message);
+                } catch (error) {
+                    showError('Error saving content: ' + (error.response?.data?.message || error.message));
+                } finally {
+                    document.getElementById('saveBtn').disabled = false;
+                    document.getElementById('saveBtn').textContent = 'Save to File';
+                }
+            };
+        }
+
+        function showResult(text) {
+            document.getElementById('resultText').textContent = text;
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize
+        checkApiConnection().then(connected => {
+            if (connected) {
+                loadFrames();
+            }
+        });
+    </script>
+</body>
+
+</html>

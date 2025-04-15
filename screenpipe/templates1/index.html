@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screenpipe Frontend</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8d7da;
+            border-radius: 4px;
+            display: none;
+        }
+        .spinner-border {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1>Screenpipe Content Extractor</h1>
+        
+        <div class="alert alert-info" id="statusAlert">
+            Checking API connection...
+        </div>
+        
+        <div class="mb-3">
+            <button id="launchBtn" class="btn btn-primary me-2">Launch Screenpipe</button>
+            <button id="captureBtn" class="btn btn-success me-2">Capture New Content</button>
+            <button id="refreshFramesBtn" class="btn btn-secondary">Refresh Frames</button>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <h3>Recent Frames</h3>
+        <div id="framesLoading" class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            Loading frames...
+        </div>
+        <ul id="framesList" class="list-group mb-3"></ul>
+
+        <div id="frameDetails" class="card" style="display: none;">
+            <div class="card-body">
+                <h5 class="card-title">Frame Details</h5>
+                <p><strong>Frame ID:</strong> <span id="frameId"></span></p>
+                <p><strong>App:</strong> <span id="frameApp"></span></p>
+                <p><strong>Timestamp:</strong> <span id="frameTime"></span></p>
+                <p><strong>Preview:</strong> <span id="framePreview"></span></p>
+                <div class="mt-3">
+                    <button id="analyzeBtn" class="btn btn-info me-2">Analyze</button>
+                    <button id="summarizeBtn" class="btn btn-info me-2">Summarize</button>
+                    <button id="saveBtn" class="btn btn-warning">Save to File</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="result" class="mt-3" style="display: none;">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between">
+                    <h5 class="mb-0">Result</h5>
+                    <button id="closeResultBtn" class="btn-close"></button>
+                </div>
+                <div class="card-body">
+                    <pre id="resultText" class="mb-0" style="white-space: pre-wrap;"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Configuration
+        const apiUrl = 'http://localhost:7000/api';
+        let apiConnected = false;
+
+        // Error handling function
+        function showError(message) {
+            const errorElement = document.getElementById('errorMessage');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+            setTimeout(() => {
+                errorElement.style.display = 'none';
+            }, 5000);
+        }
+
+        // Check API connection
+        async function checkApiConnection() {
+            try {
+                const response = await axios.get('http://localhost:7000/');
+                document.getElementById('statusAlert').innerHTML = 
+                    '<strong>Connected to API:</strong> Screenpipe service is running';
+                document.getElementById('statusAlert').className = 'alert alert-success';
+                apiConnected = true;
+                return true;
+            } catch (error) {
+                document.getElementById('statusAlert').innerHTML = 
+                    '<strong>API Connection Failed:</strong> Make sure the Flask server is running on port 7000';
+                document.getElementById('statusAlert').className = 'alert alert-danger';
+                apiConnected = false;
+                return false;
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('launchBtn').addEventListener('click', async () => {
+            if (!apiConnected && !(await checkApiConnection())) {
+                showError('Cannot connect to API. Please make sure the server is running.');
+                return;
+            }
+
+            try {
+                document.getElementById('launchBtn').disabled = true;
+                document.getElementById('launchBtn').innerHTML = 
+                    '<span class="spinner-border spinner-border-sm"></span> Launching...';
+                
+                const response = await axios.get(`${apiUrl}/launch_screenpipe`);
+                alert(response.data.message);
+            } catch (error) {
+                console.error('Error launching Screenpipe:', error);
+                showError('Error launching Screenpipe: ' + (error.response?.data?.message || error.message));
+            } finally {
+                document.getElementById('launchBtn').disabled = false;
+                document.getElementById('launchBtn').textContent = 'Launch Screenpipe';
+            }
+        });
+
+        document.getElementById('captureBtn').addEventListener('click', async () => {
+            if (!apiConnected && !(await checkApiConnection())) {
+                showError('Cannot connect to API. Please make sure the server is running.');
+                return;
+            }
+
+            try {
+                document.getElementById('captureBtn').disabled = true;
+                document.getElementById('captureBtn').innerHTML = 
+                    '<span class="spinner-border spinner-border-sm"></span> Capturing...';
+                
+                const response = await axios.post(`${apiUrl}/capture`);
+                if (response.data.status === 'error') {
+                    showError(response.data.message);
+                    return;
+                }
+                showFrameDetails(response.data);
+                await loadFrames(); // Refresh the frames list
+            } catch (error) {
+                console.error('Error capturing content:', error);
+                showError('Error capturing content: ' + (error.response?.data?.message || error.message));
+            } finally {
+                document.getElementById('captureBtn').disabled = false;
+                document.getElementById('captureBtn').textContent = 'Capture New Content';
+            }
+        });
+
+        document.getElementById('refreshFramesBtn').addEventListener('click', () => {
+            loadFrames();
+        });
+
+        document.getElementById('closeResultBtn').addEventListener('click', () => {
+            document.getElementById('result').style.display = 'none';
+        });
+
+        async function loadFrames() {
+            if (!apiConnected && !(await checkApiConnection())) {
+                document.getElementById('framesLoading').style.display = 'none';
+                showError('Cannot connect to API. Please make sure the server is running.');
+                return;
+            }
+
+            try {
+                document.getElementById('framesLoading').style.display = 'block';
+                document.getElementById('framesList').innerHTML = '';
+                
+                const response = await axios.get(`${apiUrl}/frames`);
+                const frames = response.data;
+                
+                const framesList = document.getElementById('framesList');
+                framesList.innerHTML = '';
+                
+                if (frames.length === 0) {
+                    framesList.innerHTML = '<li class="list-group-item text-center">No frames available</li>';
+                } else {
+                    frames.forEach(frame => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.innerHTML = `[${frame.timestamp}] ${frame.app_type}: ${frame.preview}`;
+                        li.style.cursor = 'pointer';
+                        li.addEventListener('click', () => showFrameDetails(frame));
+                        framesList.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading frames:', error);
+                showError('Error loading frames: ' + (error.response?.data?.message || error.message));
+            } finally {
+                document.getElementById('framesLoading').style.display = 'none';
+            }
+        }
+
+        function showFrameDetails(frame) {
+            document.getElementById('frameId').textContent = frame.frame_id;
+            document.getElementById('frameApp').textContent = frame.app_type;
+            document.getElementById('frameTime').textContent = frame.timestamp;
+            document.getElementById('framePreview').textContent = frame.preview || frame.content;
+            document.getElementById('frameDetails').style.display = 'block';
+            document.getElementById('result').style.display = 'none';
+
+            document.getElementById('analyzeBtn').onclick = async () => {
+                try {
+                    document.getElementById('analyzeBtn').disabled = true;
+                    document.getElementById('analyzeBtn').innerHTML = 
+                        '<span class="spinner-border spinner-border-sm"></span> Analyzing...';
+                    
+                    const response = await axios.post(`${apiUrl}/process/${frame.frame_id}`, { action: 'analyze' });
+                    showResult(response.data.result);
+                } catch (error) {
+                    showError('Error processing frame: ' + (error.response?.data?.message || error.message));
+                } finally {
+                    document.getElementById('analyzeBtn').disabled = false;
+                    document.getElementById('analyzeBtn').textContent = 'Analyze';
+                }
+            };
+
+            document.getElementById('summarizeBtn').onclick = async () => {
+                try {
+                    document.getElementById('summarizeBtn').disabled = true;
+                    document.getElementById('summarizeBtn').innerHTML = 
+                        '<span class="spinner-border spinner-border-sm"></span> Summarizing...';
+                    
+                    const response = await axios.post(`${apiUrl}/process/${frame.frame_id}`, { action: 'summarize' });
+                    showResult(response.data.result);
+                } catch (error) {
+                    showError('Error processing frame: ' + (error.response?.data?.message || error.message));
+                } finally {
+                    document.getElementById('summarizeBtn').disabled = false;
+                    document.getElementById('summarizeBtn').textContent = 'Summarize';
+                }
+            };
+
+            document.getElementById('saveBtn').onclick = async () => {
+                try {
+                    document.getElementById('saveBtn').disabled = true;
+                    document.getElementById('saveBtn').innerHTML = 
+                        '<span class="spinner-border spinner-border-sm"></span> Saving...';
+                    
+                    const response = await axios.post(`${apiUrl}/save/${frame.frame_id}`);
+                    alert(response.data.message);
+                } catch (error) {
+                    showError('Error saving content: ' + (error.response?.data?.message || error.message));
+                } finally {
+                    document.getElementById('saveBtn').disabled = false;
+                    document.getElementById('saveBtn').textContent = 'Save to File';
+                }
+            };
+        }
+
+        function showResult(text) {
+            document.getElementById('resultText').textContent = text;
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Initialize
+        checkApiConnection().then(connected => {
+            if (connected) {
+                loadFrames();
+            }
+        });
+    </script>
+</body>
+</html>
