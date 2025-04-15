@@ -45,4 +45,4 @@ RUN mkdir -p templates static
 EXPOSE 7000
 
 # Command to run the application with Gunicorn
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --timeout 120 app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --timeout 120 app1:app"]
