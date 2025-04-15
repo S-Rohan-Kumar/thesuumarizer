@@ -5,7 +5,12 @@ screenpipe_launcher.py - A module to open the Screenpipe executable file on Wind
 import os
 import subprocess
 import sys
-import winreg
+if sys.platform == 'win32':  # 'win32' indicates Windows
+    import winreg
+    # Use winreg here for Windows-specific functionality
+else:
+    # Handle the non-Windows case (e.g., skip or use an alternative)
+    pass
 from pathlib import Path
 from typing import Optional, List
 
