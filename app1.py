@@ -9,7 +9,7 @@ from pydub import AudioSegment
 import os
 import tempfile
 import sys
-from langi import extract_text_auto_language
+from langi import extract_text
 import yt_dlp
 from pydub.utils import make_chunks
 from flask_mysqldb import MySQL
