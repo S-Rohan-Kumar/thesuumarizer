@@ -9,13 +9,6 @@ from pydub import AudioSegment
 import os
 import tempfile
 import sys
-
-if sys.platform == 'win32':  # 'win32' indicates Windows
-    import winreg
-    # Use winreg here for Windows-specific functionality
-else:
-    # Handle the non-Windows case (e.g., skip or use an alternative)
-    pass
 from langi import extract_text
 import yt_dlp
 from pydub.utils import make_chunks
@@ -31,7 +24,6 @@ import sqlite3
 import time
 import requests
 import json
-from screenpipe_launcher import launch_screenpipe_in_terminal
 from main import extract_content_for_ai, get_recent_frames, capture_new_content, send_to_deepseek, save_content_to_file
 app = Flask(__name__)
 CORS(app)
