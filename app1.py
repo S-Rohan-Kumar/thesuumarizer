@@ -9,7 +9,7 @@ from pydub import AudioSegment
 import os
 import tempfile
 import sys
-from langi import extract_text
+from langi import extract_text_auto_language
 import yt_dlp
 from pydub.utils import make_chunks
 from flask_mysqldb import MySQL
@@ -22,7 +22,6 @@ from dotenv import load_dotenv
 import time
 import requests
 import json
-from main import extract_content_for_ai, get_recent_frames, capture_new_content, send_to_deepseek, save_content_to_file
 app = Flask(__name__)
 CORS(app)
 
