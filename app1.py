@@ -62,14 +62,8 @@ app.config['MYSQL_DB'] = os.getenv('MYSQL_DB', 'sql12772852')
 app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
 
 # Initialize MySQL if available
-if OPTIONAL_IMPORTS_AVAILABLE:
-    try:
-        mysql = MySQL(app)
-    except Exception as e:
-        logger.error(f"Failed to initialize MySQL: {e}")
-        mysql = None
-else:
-    mysql = None
+
+
 
 # API keys from environment variables
 GROQ_API_KEY = os.getenv('GROQ_API_KEY', "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")
