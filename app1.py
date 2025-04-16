@@ -15,6 +15,7 @@ from pydub.utils import make_chunks
 from flask_mysqldb import MySQL
 from werkzeug.utils import secure_filename
 import pdfplumber
+import subprocess
 import bcrypt
 import re
 import logging
