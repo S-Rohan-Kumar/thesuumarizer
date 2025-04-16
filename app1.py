@@ -782,5 +782,71 @@ def save_frame(frame_id):
         return jsonify({"status": "success", "message": f"Content saved for frame {frame_id}"})
     return jsonify({"status": "error", "message": "Failed to save content"}), 500
 
+@app.route('/tesseract-check')
+def tesseract_check():
+    """Debug endpoint to check Tesseract installation"""
+    result = {
+        "env_path": os.getenv('TESSERACT_PATH', 'Not set'),
+        "current_path": pytesseract.pytesseract.tesseract_cmd,
+        "exists": os.path.exists(pytesseract.pytesseract.tesseract_cmd) if pytesseract.pytesseract.tesseract_cmd else False
+    }
+    
+    # Try to get version
+    try:
+        version = subprocess.check_output(['tesseract', '--version']).decode()
+        result["version"] = version
+    except Exception as e:
+        result["version_error"] = str(e)
+        
+    return jsonify(result)
+
+# Database check endpoint for debugging
+@app.route('/db-check')
+def db_check():
+    """Debug endpoint to check database connection"""
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT VERSION()")
+        version = cursor.fetchone()
+        cursor.close()
+        return jsonify({"connected": True, "version": version[0]})
+    except Exception as e:
+        return jsonify({"connected": False, "error": str(e)}), 500
+
+# Create a simple health check endpoint for Render
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint for Render"""
+    return jsonify({"status": "healthy"}), 200
+
+# Create database tables if they don't exist
+def init_db():
+    try:
+        cursor = mysql.connection.cursor()
+        
+        # Create register table if it doesn't exist
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS register (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            fstname VARCHAR(100) NOT NULL,
+            lstname VARCHAR(100) NOT NULL,
+            email VARCHAR(100) UNIQUE NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """)
+        
+        mysql.connection.commit()
+        cursor.close()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.error(f"Error initializing database: {str(e)}")
+
+# Initialize the database on startup
 if __name__ == '__main__':
-    app.run(debug=True, port=7000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
+else:
+    # Initialize database when running in production (only if in a context where mysql is available)
+    with app.app_context():
+        init_db()
