@@ -147,9 +147,7 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Handle user login"""
-    cursor = None
     if request.method == 'GET':
-        # Render the login page
         return render_template("login.html")
     
     try:
@@ -162,36 +160,30 @@ def login():
         email = data.get("email")
         password = data.get("password")
         
-        # Validate data
         if not email or not password:
             logger.warning("Missing email or password")
             return jsonify({"success": False, "message": "Email and password are required"}), 400
         
-        # Email format validation
         if not is_valid_email(email):
             return jsonify({"success": False, "message": "Invalid email format"}), 400
         
-        # Create cursor
+        # Using MySQL connection
         cursor = mysql.connection.cursor()
-        
-        # Check if the user exists
         query = "SELECT id, fstname, lstname, email, password FROM register WHERE email=%s"
         cursor.execute(query, (email,))
         user = cursor.fetchone()
+        cursor.close()
         
         if not user:
             logger.warning(f"No user found with email: {email}")
             return jsonify({"success": False, "message": "User not found"}), 404
         
-        # Extract user details
         user_id, firstname, lastname, user_email, hashed_password = user
         
-        # Verify the password
         if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-            # Set session and return success
             session['user_id'] = user_id
             logger.info(f"User {email} logged in successfully")
-            return jsonify({"success": True, "message": "Login successful", "user_id": user_id,"firstname":firstname,"lastnmae":lastname}), 200
+            return jsonify({"success": True, "message": "Login successful", "user_id": user_id}), 200
         else:
             logger.warning(f"Invalid password attempt for {email}")
             return jsonify({"success": False, "message": "Invalid password"}), 401
@@ -199,10 +191,7 @@ def login():
     except Exception as e:
         logger.error("Login error: %s", str(e))
         return jsonify({"success": False, "message": str(e)}), 500
-    
-    finally:
-        if cursor:
-            cursor.close()
+        
 @app.route('/chatbot')
 def chatbot():
     return render_template("chatbot.html")
@@ -210,9 +199,7 @@ def chatbot():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """Handle user registration"""
-    cursor = None
     if request.method == 'GET':
-        # Render the registration page
         return render_template("register.html")
     try:
         logger.info("Registration request received")
@@ -226,48 +213,38 @@ def register():
         email = data.get("email")
         password = data.get("password")
         
-        # Validate data
         if not all([fstname, lstname, email, password]):
             logger.warning("Missing registration fields")
             return jsonify({"success": False, "message": "All fields are required"}), 400
         
-        # Email format validation
         if not is_valid_email(email):
             return jsonify({"success": False, "message": "Invalid email format"}), 400
             
-        # Password strength validation
         if len(password) < 8:
             return jsonify({"success": False, "message": "Password must be at least 8 characters long"}), 400
             
-        # Create cursor
+        # Using MySQL connection
         cursor = mysql.connection.cursor()
-        
-        # Check if email already exists
         cursor.execute("SELECT id FROM register WHERE email=%s", (email,))
         if cursor.fetchone():
             logger.warning(f"Email already registered: {email}")
+            cursor.close()
             return jsonify({"success": False, "message": "Email already registered"}), 409
         
-        # Hash the password
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        
-        # Execute query with hashed password
         query = "INSERT INTO register (fstname, lstname, email, password) VALUES (%s, %s, %s, %s)"
         cursor.execute(query, (fstname, lstname, email, hashed_password))
-        
-        # Commit changes
         mysql.connection.commit()
+        user_id = cursor.lastrowid
+        cursor.close()
         logger.info(f"New user registered: {email}")
         
-        return jsonify({"success": True, "message": "Registration successful"}), 201
+        return jsonify({"success": True, "message": "Registration successful", "user_id": user_id}), 201
         
     except Exception as e:
         logger.error("Registration error: %s", str(e))
         return jsonify({"success": False, "message": str(e)}), 500
-    
-    finally:
-        if cursor:
-            cursor.close()
+
 @app.route('/main', methods=['GET','POST'])
 def main():
     return render_template("dark.html")    
