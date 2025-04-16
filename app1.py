@@ -22,11 +22,7 @@ from dotenv import load_dotenv
 import time
 import requests
 import json
-app = Flask(__name__)
-CORS(app)
-
-
-# Load environment variables from .env file
+# Load environment variables from .env file (for local development)
 load_dotenv()
 
 # Configure logging
@@ -41,88 +37,99 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True)
 app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key_for_dev')
 
-# Database configuration from environment variables
-# Load environment variables from .env file
-load_dotenv()
-
-# Configure logging
-
-
-# Get port for Render deployment
-port = int(os.environ.get("PORT", 7000))
-
-# Secret key for session
-app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key_for_dev')
-
-# Database configuration from environment variables or use the credentials from the screenshot
-app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST', 'sql12.freesqldatabase.com')
-app.config['MYSQL_USER'] = os.getenv('MYSQL_USER', 'sql12772852') 
-app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD', 'sC1eaZC7nf')
-app.config['MYSQL_DB'] = os.getenv('MYSQL_DB', 'sql12772852')
-app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
-
-# Initialize MySQL if available
-
-
+# Database configuration from the email screenshot
+app.config['MYSQL_HOST'] = 'sql12.freesqldatabase.com'
+app.config['MYSQL_USER'] = 'sql12772852'
+app.config['MYSQL_PASSWORD'] = 'sC1eaZC7nf'
+app.config['MYSQL_DB'] = 'sql12772852'
+app.config['MYSQL_PORT'] = 3306
+mysql = MySQL(app)
 
 # API keys from environment variables
-GROQ_API_KEY = os.getenv('GROQ_API_KEY', "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")
 
-# Configure Tesseract path - use env var or default based on platform
-if os.name == 'nt':  # Windows
-    TESSERACT_PATH = os.getenv('TESSERACT_PATH', r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe')
-else:  # Linux/Mac - Render is Linux-based
-    TESSERACT_PATH = os.getenv('TESSERACT_PATH', '/usr/bin/tesseract')
 
-# Try to set tesseract path if pytesseract is available
-try:
-    pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
-except Exception as e:
-    logger.warning(f"Could not set Tesseract path: {e}")
+# With this:
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
 
-# Create temp directory if it doesn't exist
-TEMP_DIR = os.path.join(os.getcwd(), 'temp')
-if not os.path.exists(TEMP_DIR):
-    os.makedirs(TEMP_DIR)
+# 2. Improve the temp directory handling:
+TEMP_DIR = os.path.join(os.getenv('RENDER_DISK_PATH', os.getcwd()), 'temp')
+os.makedirs(TEMP_DIR, exist_ok=True)
+os.chmod(TEMP_DIR, 0o777)  # Ensure write permissions
 
-# Database path for screenpipe
-try:
-    DB_PATH = os.getenv('DB_PATH', fr"C:\Users\{os.getlogin()}\.screenpipe\db.sqlite")
-except Exception:
-    DB_PATH = os.getenv('DB_PATH', "/tmp/screenpipe.db")
-
-# Helper function for database connection using MySQL or direct connection
-def get_db_connection():
-    """Either returns a MySQL cursor or a direct connection to the MySQL database"""
-    if mysql:
-        try:
-            conn = mysql.connection
-            cursor = conn.cursor()
-            return conn, cursor
-        except Exception as e:
-            logger.error(f"Error connecting to MySQL via Flask-MySQL: {e}")
+# 3. Add diagnostic endpoints to help troubleshoot:
+@app.route('/system-check')
+def system_check():
+    """Check system dependencies"""
+    results = {}
     
-    # Fallback to direct connection
+    # Check Tesseract
     try:
-        import pymysql
-        conn = pymysql.connect(
-            host=app.config['MYSQL_HOST'],
-            user=app.config['MYSQL_USER'],
-            password=app.config['MYSQL_PASSWORD'],
-            database=app.config['MYSQL_DB'],
-            port=app.config['MYSQL_PORT']
-        )
-        cursor = conn.cursor()
-        return conn, cursor
+        results["tesseract"] = {
+            "path": TESSERACT_PATH,
+            "exists": os.path.exists(TESSERACT_PATH),
+            "version": subprocess.check_output([TESSERACT_PATH, '--version'], stderr=subprocess.STDOUT).decode().strip()
+        }
     except Exception as e:
-        logger.error(f"Error connecting directly to MySQL: {e}")
-        return None, None
+        results["tesseract"] = {"error": str(e)}
+    
+    # Check FFmpeg
+    try:
+        results["ffmpeg"] = {
+            "version": subprocess.check_output(['ffmpeg', '-version'], stderr=subprocess.STDOUT).decode().split('\n')[0]
+        }
+    except Exception as e:
+        results["ffmpeg"] = {"error": str(e)}
+    
+    # Check temp directory
+    results["temp_dir"] = {
+        "path": TEMP_DIR,
+        "exists": os.path.exists(TEMP_DIR),
+        "writable": os.access(TEMP_DIR, os.W_OK),
+        "disk_free": shutil.disk_usage(TEMP_DIR).free
+    }
+    
+    # Check API key
+    results["groq_api"] = {
+        "key_set": bool(GROQ_API_KEY)
+    }
+    
+    return jsonify(results)
+
+
+# Configure Tesseract path
+try:
+    TESSERACT_PATH = subprocess.check_output(['which', 'tesseract']).decode().strip()
+    logger.info(f"Found Tesseract at: {TESSERACT_PATH}")
+except Exception as e:
+    logger.warning(f"Could not auto-detect Tesseract: {str(e)}")
+    # Try common paths
+    possible_paths = [
+        '/usr/bin/tesseract',
+        '/usr/local/bin/tesseract',
+        '/app/.apt/usr/bin/tesseract'
+    ]
+    TESSERACT_PATH = next((p for p in possible_paths if os.path.exists(p)), 
+                          os.getenv('TESSERACT_PATH', '/usr/bin/tesseract'))
+    logger.info(f"Using Tesseract path: {TESSERACT_PATH}")
+
+pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
 
 # Create temp directory if it doesn't exist
-TEMP_DIR = os.path.join(os.getcwd(), 'temp')
+TEMP_DIR = os.path.join(os.getenv('RENDER_DISK_PATH', os.getcwd()), 'temp')
 if not os.path.exists(TEMP_DIR):
     os.makedirs(TEMP_DIR)
 
+# Create directories for templates and static files if they don't exist
+TEMPLATE_DIR = os.path.join(os.getcwd(), 'templates')
+STATIC_DIR = os.path.join(os.getcwd(), 'static')
+if not os.path.exists(TEMPLATE_DIR):
+    os.makedirs(TEMPLATE_DIR)
+if not os.path.exists(STATIC_DIR):
+    os.makedirs(STATIC_DIR)
+
+# Function to get database connection
+def get_db_connection():
+    return mysql.connection
 @app.route('/features')
 def features():
     return render_template("features.html")
