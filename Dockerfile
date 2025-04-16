@@ -49,4 +49,4 @@ COPY . .
 RUN mkdir -p templates static
 
 # Entry point command
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --timeout 120 app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --timeout 120 app1:app"]
