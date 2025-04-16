@@ -19,8 +19,6 @@ import bcrypt
 import re
 import logging
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request,render_template
-import sqlite3
 import time
 import requests
 import json
@@ -45,18 +43,87 @@ CORS(app, supports_credentials=True)
 app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key_for_dev')
 
 # Database configuration from environment variables
-app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST', 'localhost')
-app.config['MYSQL_USER'] = os.getenv('MYSQL_USER', 'root')
-app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD', 'preran123@#$')
-app.config['MYSQL_DB'] = os.getenv('MYSQL_DB', 'login')
-mysql = MySQL(app)
+# Load environment variables from .env file
+load_dotenv()
+
+# Configure logging
+
+
+# Get port for Render deployment
+port = int(os.environ.get("PORT", 7000))
+
+# Secret key for session
+app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key_for_dev')
+
+# Database configuration from environment variables or use the credentials from the screenshot
+app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST', 'sql12.freesqldatabase.com')
+app.config['MYSQL_USER'] = os.getenv('MYSQL_USER', 'sql12772852') 
+app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD', 'sC1eaZC7nf')
+app.config['MYSQL_DB'] = os.getenv('MYSQL_DB', 'sql12772852')
+app.config['MYSQL_PORT'] = int(os.getenv('MYSQL_PORT', 3306))
+
+# Initialize MySQL if available
+if OPTIONAL_IMPORTS_AVAILABLE:
+    try:
+        mysql = MySQL(app)
+    except Exception as e:
+        logger.error(f"Failed to initialize MySQL: {e}")
+        mysql = None
+else:
+    mysql = None
 
 # API keys from environment variables
-GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+GROQ_API_KEY = os.getenv('GROQ_API_KEY', "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")
 
-# Configure Tesseract path
-TESSERACT_PATH = os.getenv('TESSERACT_PATH', r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe')
-pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
+# Configure Tesseract path - use env var or default based on platform
+if os.name == 'nt':  # Windows
+    TESSERACT_PATH = os.getenv('TESSERACT_PATH', r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe')
+else:  # Linux/Mac - Render is Linux-based
+    TESSERACT_PATH = os.getenv('TESSERACT_PATH', '/usr/bin/tesseract')
+
+# Try to set tesseract path if pytesseract is available
+try:
+    pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
+except Exception as e:
+    logger.warning(f"Could not set Tesseract path: {e}")
+
+# Create temp directory if it doesn't exist
+TEMP_DIR = os.path.join(os.getcwd(), 'temp')
+if not os.path.exists(TEMP_DIR):
+    os.makedirs(TEMP_DIR)
+
+# Database path for screenpipe
+try:
+    DB_PATH = os.getenv('DB_PATH', fr"C:\Users\{os.getlogin()}\.screenpipe\db.sqlite")
+except Exception:
+    DB_PATH = os.getenv('DB_PATH', "/tmp/screenpipe.db")
+
+# Helper function for database connection using MySQL or direct connection
+def get_db_connection():
+    """Either returns a MySQL cursor or a direct connection to the MySQL database"""
+    if mysql:
+        try:
+            conn = mysql.connection
+            cursor = conn.cursor()
+            return conn, cursor
+        except Exception as e:
+            logger.error(f"Error connecting to MySQL via Flask-MySQL: {e}")
+    
+    # Fallback to direct connection
+    try:
+        import pymysql
+        conn = pymysql.connect(
+            host=app.config['MYSQL_HOST'],
+            user=app.config['MYSQL_USER'],
+            password=app.config['MYSQL_PASSWORD'],
+            database=app.config['MYSQL_DB'],
+            port=app.config['MYSQL_PORT']
+        )
+        cursor = conn.cursor()
+        return conn, cursor
+    except Exception as e:
+        logger.error(f"Error connecting directly to MySQL: {e}")
+        return None, None
 
 # Create temp directory if it doesn't exist
 TEMP_DIR = os.path.join(os.getcwd(), 'temp')
