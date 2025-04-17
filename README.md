@@ -1,7 +1,7 @@
 ![github-submission-banner](https://github.com/user-attachments/assets/a1493b84-e4e2-456e-a791-ce35ee2bcf2f)
 
 # 🚀Welcome to Summarizer+
-Summarizer+ is a website to save your time by summarizing texts,audio,video,pdfs,youtube links and can also capture your devices screen to extract text and summarize contents on the screen
+Summarizer+ is a website to save your time by summarizing texts,audio,video,pdfs,YouTube links and can also capture your devices screen to extract text and summarize contents on the screen
 
 ## 📌 Problem Statement
 - Weave AI magic with groq
@@ -30,3 +30,89 @@ our goal is to save time of users by summarizing any content for quick understan
 - Key challenges you addressed: integrating screenpipe
   
 - Any pivots, brainstorms, or breakthroughs during hacking: made an extra chatbot feature for any immediate requests from AI
+
+  ---
+
+## 🛠️ Tech Stack
+
+### Core Technologies Used:
+- Frontend: HTML and CSS
+- Backend: python
+- Database: mySQL
+- APIs: groq, deepseek and screenpipe
+- Hosting: Render Hosting
+
+### Sponsor Technologies Used (if any):
+- [✅] **Groq:** _we used groq to summarize text_  
+
+- [✅] **Screenpipe:** _Screen-based analytics or workflows_  
+---
+
+## ✨ Key Features
+
+Highlight the most important features of your project:
+
+- ✅ Feature 1: Text extraction from multiple medias like images,videos,audio,pdfs and audio extraction from YouTube links  
+- ✅ Feature 2: Live screen text extraction using screenpipe terminator
+- ✅ Feature 3: Mini AI chatbot option for extra assistance or for general help using deepseek API
+- ✅ Feature 4: Text summarizer using groq API
+
+  ## 📽️ Demo & Deliverables
+
+- **Demo Video Link:** [Paste YouTube or Loom link here]  
+- **Pitch Deck / PPT Link:** [Paste Google Slides / PDF link here]  
+
+---
+
+## ✅ Tasks & Bonus Checklist
+
+- [ ] **All members of the team completed the mandatory task - Followed at least 2 of our social channels and filled the form** (Details in Participant Manual)  
+- [ ] **All members of the team completed Bonus Task 1 - Sharing of Badges and filled the form (2 points)**  (Details in Participant Manual)
+- [ ] **All members of the team completed Bonus Task 2 - Signing up for Sprint.dev and filled the form (3 points)**  (Details in Participant Manual)
+
+## 🧪 How to Run the Project
+
+---
+
+### Requirements:
+- Python and Docker
+- API Keys: Groq (api_key="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") , deepseek, screenpipe
+- .env file setup (if needed)
+  reccomended
+
+### Local Setup:
+```bash
+# Clone the repo
+git clone https://github.com/your-team/project-name
+
+# Install dependencies
+cd project-name
+npm install
+
+# Start development server
+npm run dev
+```
+
+## 🧬 Future Scope
+
+List improvements, extensions, or follow-up features:
+
+- 📈 More integrations and faster response time  
+- 🛡️ Security enhancements  
+- 🌐 Localization / broader accessibility
+
+---
+
+## 📎 Resources / Credits
+
+- APIs or datasets used: groq, screenpipe
+- Open source libraries or tools referenced: flask, pytesseract, pdfplumber, langi, moviepy, subprocess, yt_dlp
+- Acknowledgements  
+
+---
+
+## 🏁 Final Words
+
+We had a fun time making this code from scratch, it was a huge learning experience for a team of 2nd semester students who have never done fullstack web development before, we had days where the code was running smooth, some days where the code broke, but overall it was satisfying and is still looking forward to upgrade and enhance the project and make more in the future
+
+---
