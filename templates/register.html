@@ -553,7 +553,7 @@ input[type="checkbox"] {
                     registerButton.disabled = true;
                     registerButton.textContent = 'Processing...';
 
-                    fetch('http://127.0.0.1:7000/register', {
+                    fetch('/register', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
