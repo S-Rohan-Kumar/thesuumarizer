@@ -36,7 +36,7 @@ our goal is to save time of users by summarizing any content for quick understan
 ## 🛠️ Tech Stack
 
 ### Core Technologies Used:
-- Frontend: HTML and CSS
+- Frontend: HTML and CSS and JavaScript(js)
 - Backend: python
 - Database: mySQL
 - APIs: groq, deepseek and screenpipe
@@ -56,6 +56,7 @@ Highlight the most important features of your project:
 - ✅ Feature 2: Live screen text extraction using screenpipe terminator
 - ✅ Feature 3: Mini AI chatbot option for extra assistance or for general help using deepseek API
 - ✅ Feature 4: Text summarizer using groq API
+- ✅ Feature 5: Multilingual AI response (kannada, hindi, telegu and tamil)
 
   ## 📽️ Demo & Deliverables
 
@@ -76,7 +77,7 @@ Highlight the most important features of your project:
 
 ### Requirements:
 - Python and Docker
-- API Keys: Groq (api_key="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") , deepseek, screenpipe
+- API Keys: Groq (api_key="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") , deepseek(api_key="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"), screenpipe
 - .env file setup (if needed)
   reccomended
 
