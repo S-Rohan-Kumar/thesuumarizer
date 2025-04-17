@@ -510,7 +510,7 @@ a.text-sm.text-primary:hover {
 
                     console.log('Attempting login with:', email.value);
 
-                    fetch('http://127.0.0.1:7000/login', {
+                    fetch('/login', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
