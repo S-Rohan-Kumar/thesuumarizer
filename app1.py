@@ -247,7 +247,7 @@ def register():
 
 @app.route('/main', methods=['GET','POST'])
 def main():
-    return render_template("dark.html")    
+    return render_template("main2.html")    
 @app.route('/imgtxt', methods=['POST'])
 def imgtxt():
     """Extract text from an uploaded image"""
