@@ -152,14 +152,16 @@ MYSQL_DB=login
 TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
 GROQ_API_KEY=your_groq_api_key
 DEEPSEEK_API_KEY=your_deepseek_api_key
-🚀 6. Run the App
-Make sure you run app1.py:
 
-bash
-Copy
-Edit
-python app1.py
-Visit: http://localhost:8000
+
+🚀 6. Run the App
+  Make sure you run app1.py:
+  
+  bash
+  Copy
+  Edit
+  python app1.py
+  Visit: http://localhost:8000
 
 
 
