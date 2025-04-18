@@ -13,7 +13,7 @@ our goal is to save time of users by summarizing any content for quick understan
 
 ## 🧠 Team & Approach
 ### Team Name:
-`GPC (Google Paatre Cleaners) `
+`Team Ampersand &&`
 
 ### Team Members:  
 - S Rohan Kumar (GitHub: https://github.com/S-Rohan-Kumar / linkedin: https://www.linkedin.com/in/s-rohan-kumar-a1b59132b/ / Team Leader and Main developer)
@@ -60,7 +60,9 @@ Highlight the most important features of your project:
 
   ## 📽️ Demo & Deliverables
 
-- **Demo Video Link:** [https://youtu.be/1G3tgZeoY4A]  
+- **Demo Video Link:** [https://youtu.be/1G3tgZeoY4A]
+- **Deployment Link:** [https://thesuumarizerplus.onrender.com]
+- (NOTE: due to limited web deployment options, YouTube text summarization and Screenpipe are broken as the server cannot fetch youtube video links and doesnt allow display capture for screenpipe, the features work if ran on localhost as shown in the demo video)
 - **Pitch Deck / PPT Link:** [projectsumz^M.pdf](https://github.com/user-attachments/files/19799532/projectsumz.M.pdf)  
 
 ---
