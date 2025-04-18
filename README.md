@@ -139,15 +139,15 @@ Highlight the most important features of your project:
     
     CREATE TABLE register (
 
-      id INT AUTO_INCREMENT PRIMARY KEY,
+        id INT AUTO_INCREMENT PRIMARY KEY,
 
-      fstname VARCHAR(255),
+        fstname VARCHAR(255),
 
-      lstname VARCHAR(255),
+        lstname VARCHAR(255),
 
-      email VARCHAR(255) UNIQUE,
+        email VARCHAR(255) UNIQUE,
 
-      password TEXT
+        password TEXT
     
     );
     
