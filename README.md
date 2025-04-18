@@ -82,62 +82,62 @@ Highlight the most important features of your project:
   reccomended
   
 ✅ Prerequisites
-Ensure you have the following installed:
+✅Ensure you have the following installed:
 
-Python 3.9+
+✅Python 3.9+
 
-pip
+✅pip
 
-MySQL Server
+✅MySQL Server
 
-Tesseract OCR
+✅Tesseract OCR
 
-ffmpeg
+✅ffmpeg
 
-Screenpipe.exe (seems to be a Windows screen capture utility)
+✅Screenpipe.exe (seems to be a Windows screen capture utility)
 
-Optional: Node.js if your templates use any JS-based tools
+✅Optional: Node.js if your templates use any JS-based tools
 
-pip install flask flask-cors flask-mysqldb pytesseract pillow moviepy SpeechRecognition pydub yt_dlp bcrypt python-dotenv requests pdfplumber
+✅pip install flask flask-cors flask-mysqldb pytesseract pillow moviepy SpeechRecognition pydub yt_dlp bcrypt python-dotenv requests pdfplumber
 
 ⚙️ 4. Install External Software
-Tesseract OCR
-Download and install from: https://github.com/tesseract-ocr/tesseract
-
-Note the install path and update your .env file like:
-
-ini
-Copy
-Edit
-TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
-FFmpeg (for moviepy/audio)
-Download: https://ffmpeg.org/download.html
-Add it to your system PATH.
-
-MySQL
-
-Create a database named login.
-
-Create a table register as expected in app1.py.
-
-Example schema:
-
-sql
-Copy
-Edit
-CREATE TABLE register (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    fstname VARCHAR(255),
-    lstname VARCHAR(255),
-    email VARCHAR(255) UNIQUE,
-    password TEXT
-);
-Screenpipe
-
-Ensure Screenpipe.exe is available.
-
-The app automatically tries to locate and run it via screenpipe_launcher.py.
-
+  Tesseract OCR
+  Download and install from: https://github.com/tesseract-ocr/tesseract
+  
+  Note the install path and update your .env file like:
+  
+  ini
+  Copy
+  Edit
+  TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
+  FFmpeg (for moviepy/audio)
+  Download: https://ffmpeg.org/download.html
+  Add it to your system PATH.
+  
+  MySQL
+  
+  Create a database named login.
+  
+  Create a table register as expected in app1.py.
+  
+  Example schema:
+  
+  sql
+  Copy
+  Edit
+  CREATE TABLE register (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      fstname VARCHAR(255),
+      lstname VARCHAR(255),
+      email VARCHAR(255) UNIQUE,
+      password TEXT
+  );
+  Screenpipe
+  
+  Ensure Screenpipe.exe is available.
+  
+  The app automatically tries to locate and run it via screenpipe_launcher.py.
+  
 🔑 5. Set Up .env File
 Create a .env file in the root folder:
 
