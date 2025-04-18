@@ -80,18 +80,109 @@ Highlight the most important features of your project:
 - API Keys: Groq (api_key="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") , deepseek(api_key="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"), screenpipe
 - .env file setup (if needed)
   reccomended
+  
+✅ Prerequisites
+Ensure you have the following installed:
+
+Python 3.9+
+
+pip
+
+MySQL Server
+
+Tesseract OCR
+
+ffmpeg
+
+Screenpipe.exe (seems to be a Windows screen capture utility)
+
+Optional: Node.js if your templates use any JS-based tools
+
+pip install flask flask-cors flask-mysqldb pytesseract pillow moviepy SpeechRecognition pydub yt_dlp bcrypt python-dotenv requests pdfplumber
+
+⚙️ 4. Install External Software
+Tesseract OCR
+Download and install from: https://github.com/tesseract-ocr/tesseract
+
+Note the install path and update your .env file like:
+
+ini
+Copy
+Edit
+TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
+FFmpeg (for moviepy/audio)
+Download: https://ffmpeg.org/download.html
+Add it to your system PATH.
+
+MySQL
+
+Create a database named login.
+
+Create a table register as expected in app1.py.
+
+Example schema:
+
+sql
+Copy
+Edit
+CREATE TABLE register (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    fstname VARCHAR(255),
+    lstname VARCHAR(255),
+    email VARCHAR(255) UNIQUE,
+    password TEXT
+);
+Screenpipe
+
+Ensure Screenpipe.exe is available.
+
+The app automatically tries to locate and run it via screenpipe_launcher.py.
+
+🔑 5. Set Up .env File
+Create a .env file in the root folder:
+
+env
+Copy
+Edit
+SECRET_KEY=your_secret_key
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=your_mysql_password
+MYSQL_DB=login
+TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
+GROQ_API_KEY=your_groq_api_key
+DEEPSEEK_API_KEY=your_deepseek_api_key
+🚀 6. Run the App
+Make sure you run app1.py:
+
+bash
+Copy
+Edit
+python app1.py
+Visit: http://localhost:8000
+
+
+
 
 ### Local Setup:
 ```bash
-# Clone the repo
-git clone https://github.com/your-team/project-name
+my_project/
+├── app1.py
+├── main.py
+├── langi.py
+├── screenpipe_launcher.py
+├── templates/      <- Make sure to have these for rendering HTML
+├── static/         <- (for CSS/JS/images)
+-----------
+cd my_project
+python -m venv venv
+venv\Scripts\activate      # On Windows
+# OR
+source venv/bin/activate   # On Mac/Linux
+------
+pip install flask flask-cors flask-mysqldb pytesseract pillow moviepy SpeechRecognition pydub yt_dlp bcrypt python-dotenv requests pdfplumber
 
-# Install dependencies
-cd project-name
-npm install
 
-# Start development server
-npm run dev
 ```
 
 ## 🧬 Future Scope
