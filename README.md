@@ -13,7 +13,7 @@ our goal is to save time of users by summarizing any content for quick understan
 
 ## 🧠 Team & Approach
 ### Team Name:
-`Team Ampersand &&`
+`GPC `
 
 ### Team Members:  
 - S Rohan Kumar (GitHub: https://github.com/S-Rohan-Kumar / linkedin: https://www.linkedin.com/in/s-rohan-kumar-a1b59132b/ / Team Leader and Main developer)
