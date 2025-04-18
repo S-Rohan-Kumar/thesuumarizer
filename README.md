@@ -139,6 +139,7 @@ Highlight the most important features of your project:
   The app automatically tries to locate and run it via screenpipe_launcher.py.
   
 🔑 5. Set Up .env File
+  
   ✅Create a .env file in the root folder:
 
   - env
@@ -155,13 +156,14 @@ Highlight the most important features of your project:
 
 
 🚀 6. Run the App
+  
   ✅Make sure you run app1.py:
   
-  bash
-  Copy
-  Edit
-  python app1.py
-  Visit: http://localhost:8000
+  - bash
+  - Copy
+  - Edit
+  - python app1.py
+  - Visit: http://localhost:8000
 
 
 
