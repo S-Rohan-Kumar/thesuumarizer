@@ -54,7 +54,7 @@ Highlight the most important features of your project:
 
 - ✅ Feature 1: Text extraction from multiple medias like images,videos,audio,pdfs and audio extraction from YouTube links  
 - ✅ Feature 2: Live screen text extraction using screenpipe terminator
-- ✅ Feature 3: Mini AI chatbot option for extra assistance or for general help using deepseek API
+- ✅ Feature 3: Mini AI chatbot option for extra assistance or for general help using Groq API
 - ✅ Feature 4: Text summarizer using groq API
 - ✅ Feature 5: Multilingual AI response (kannada, hindi, telegu and tamil)
 
