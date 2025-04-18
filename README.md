@@ -60,7 +60,7 @@ Highlight the most important features of your project:
 
   ## 📽️ Demo & Deliverables
 
-- **Demo Video Link:** [https://youtu.be/M8worojA0n8]  
+- **Demo Video Link:** [https://youtu.be/1G3tgZeoY4A]  
 - **Pitch Deck / PPT Link:** [projectsumz^M.pdf](https://github.com/user-attachments/files/19799532/projectsumz.M.pdf)  
 
 ---
