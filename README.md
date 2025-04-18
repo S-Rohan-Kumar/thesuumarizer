@@ -101,26 +101,26 @@ Highlight the most important features of your project:
 ✅pip install flask flask-cors flask-mysqldb pytesseract pillow moviepy SpeechRecognition pydub yt_dlp bcrypt python-dotenv requests pdfplumber
 
 ⚙️ 4. Install External Software
-  Tesseract OCR
-  Download and install from: https://github.com/tesseract-ocr/tesseract
+  ✅Tesseract OCR
+  ✅Download and install from: https://github.com/tesseract-ocr/tesseract
   
-  Note the install path and update your .env file like:
+  ✅Note the install path and update your .env file like:
   
-  ini
-  Copy
-  Edit
-  TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
-  FFmpeg (for moviepy/audio)
-  Download: https://ffmpeg.org/download.html
-  Add it to your system PATH.
+  ✅ini
+  ✅Copy
+  ✅Edit
+  ✅TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
+  ✅FFmpeg (for moviepy/audio)
+  ✅Download: https://ffmpeg.org/download.html
+  ✅Add it to your system PATH.
   
-  MySQL
+  ✅MySQL
   
-  Create a database named login.
+  ✅Create a database named login.
   
-  Create a table register as expected in app1.py.
+  ✅Create a table register as expected in app1.py.
   
-  Example schema:
+  ✅Example schema:
   
   sql
   Copy
@@ -139,23 +139,23 @@ Highlight the most important features of your project:
   The app automatically tries to locate and run it via screenpipe_launcher.py.
   
 🔑 5. Set Up .env File
-Create a .env file in the root folder:
+  ✅Create a .env file in the root folder:
 
-env
-Copy
-Edit
-SECRET_KEY=your_secret_key
-MYSQL_HOST=localhost
-MYSQL_USER=root
-MYSQL_PASSWORD=your_mysql_password
-MYSQL_DB=login
-TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
-GROQ_API_KEY=your_groq_api_key
-DEEPSEEK_API_KEY=your_deepseek_api_key
+  env
+  Copy
+  Edit
+  SECRET_KEY=your_secret_key
+  MYSQL_HOST=localhost
+  MYSQL_USER=root
+  MYSQL_PASSWORD=your_mysql_password
+  MYSQL_DB=login
+  TESSERACT_PATH=C:\\Program Files\\Tesseract-OCR\\tesseract.exe
+  GROQ_API_KEY=your_groq_api_key
+  DEEPSEEK_API_KEY=your_deepseek_api_key
 
 
 🚀 6. Run the App
-  Make sure you run app1.py:
+  ✅Make sure you run app1.py:
   
   bash
   Copy
