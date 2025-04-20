@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="claude.css">
+
     <style>
         :root {
             --primary: #6366F1;
@@ -17,6 +17,11 @@
             --accent: #8B5CF6;
             --light: #F9FAFB;
             --dark: #1F2937;
+        }
+
+        #sumz {
+            background-color: white;
+            color: black;
         }
 
         body {
@@ -50,6 +55,7 @@
             transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             position: relative;
             overflow: hidden;
+            padding: 0.75rem 1.5rem;
         }
 
         .btn-primary:hover {
@@ -124,11 +130,13 @@
 
         .tab {
             cursor: pointer;
-            padding: 1rem;
+            padding: 0.75rem 1rem;
             border-radius: 8px 8px 0 0;
             transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             position: relative;
             overflow: hidden;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .tab::after {
@@ -181,7 +189,7 @@
         .file-upload {
             border: 2px dashed #E5E7EB;
             border-radius: 12px;
-            padding: 2rem;
+            padding: 1.5rem;
             text-align: center;
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             cursor: pointer;
@@ -240,7 +248,6 @@
             outline: none;
         }
 
-        /* Pulse animation for important elements */
         .pulse-animation {
             animation: pulse 2s infinite;
         }
@@ -259,7 +266,6 @@
             }
         }
 
-        /* Animation for result container */
         .result-appear {
             animation: resultAppear 0.8s forwards;
         }
@@ -276,7 +282,6 @@
             }
         }
 
-        /* Animation for success feedback */
         .success-animation {
             animation: successPop 0.5s ease;
         }
@@ -295,7 +300,6 @@
             }
         }
 
-        /* Hover effects for footer links */
         .footer-link {
             position: relative;
             transition: all 0.3s ease;
@@ -316,7 +320,6 @@
             width: 100%;
         }
 
-        /* Floating animation for cards */
         .floating {
             animation: floating 3s ease-in-out infinite;
         }
@@ -335,7 +338,6 @@
             }
         }
 
-        /* Progress bar animation */
         .progress-bar {
             height: 3px;
             width: 0%;
@@ -346,7 +348,6 @@
             transition: width 0.3s ease;
         }
 
-        /* Formatted content styling */
         .formatted-content {
             font-family: 'Inter', sans-serif;
         }
@@ -391,6 +392,232 @@
             left: 0.25rem;
             font-weight: bold;
         }
+
+        /* Mobile-Specific Styles */
+        @media (max-width: 640px) {
+            body {
+                font-size: 14px;
+            }
+
+            /* Navigation */
+            nav .container {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1rem;
+            }
+
+            nav .flex.items-center {
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+            }
+
+            nav .flex.items-center.space-x-4 {
+                margin-top: 1rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                width: 100%;
+            }
+
+            nav button {
+                width: 100%;
+                text-align: left;
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            /* Header */
+            header h2 {
+                font-size: 1.75rem;
+                line-height: 1.3;
+            }
+
+            header p {
+                font-size: 0.9rem;
+                max-width: 100%;
+            }
+
+            /* Main Content */
+            main.container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            /* Tabs */
+            #tab-container {
+                display: flex;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            #tab-container::-webkit-scrollbar {
+                display: none;
+            }
+
+            .tab {
+                font-size: 0.85rem;
+                padding: 0.5rem 0.75rem;
+                min-width: fit-content;
+            }
+
+            .tab i {
+                font-size: 1rem;
+            }
+
+            /* Forms */
+            .file-upload {
+                padding: 1rem;
+            }
+
+            .file-upload p.text-lg {
+                font-size: 0.9rem;
+            }
+
+            .file-upload p.text-sm {
+                font-size: 0.75rem;
+            }
+
+            .file-upload i {
+                font-size: 1.5rem;
+            }
+
+            .btn-primary {
+                padding: 0.75rem 1.25rem;
+                font-size: 0.9rem;
+                width: 100%;
+            }
+
+            .youtube-input {
+                padding: 0.5rem;
+                font-size: 0.9rem;
+            }
+
+            textarea {
+
+                font-size: 0.9rem;
+                padding: 0.75rem;
+            }
+
+            /* Result Container */
+            #result-container {
+                color: #E5E7EB;
+                padding: 1rem;
+            }
+
+            #result-container h3 {
+                color: #E5E7EB;
+                font-size: 1.25rem;
+            }
+
+            #result-content {
+                color: #E5E7EB;
+                font-size: 0.9rem;
+                padding: 0.75rem;
+            }
+
+            #copy-btn,
+            #download-btn {
+                padding: 0.5rem;
+            }
+
+            /* Feature Cards */
+            .grid.md\\:grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .card h4 {
+                font-size: 1.1rem;
+            }
+
+            .card p {
+                font-size: 0.85rem;
+            }
+
+            .feature-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 20px;
+            }
+
+            /* Footer */
+            footer .flex.md\\:flex-row {
+                flex-direction: column;
+            }
+
+            footer .grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            footer h2 {
+                font-size: 1.5rem;
+            }
+
+            footer h3 {
+                font-size: 1.1rem;
+            }
+
+            footer p,
+            footer ul li {
+                font-size: 0.85rem;
+            }
+
+            /* Animations */
+            .floating {
+                animation-duration: 2.5s;
+            }
+
+            /* Hide non-essential elements if needed */
+            .animate__animated:not(.animate__fadeIn) {
+                animation-duration: 0.5s;
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            /* Intermediate breakpoint for tablets */
+            header h2 {
+                font-size: 2rem;
+            }
+
+            .tab {
+                font-size: 0.9rem;
+            }
+
+            .btn-primary {
+                padding: 0.75rem 1.5rem;
+            }
+
+            .grid.md\\:grid-cols-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Styling for all scrollbars in dark theme */
+        
+
+        /* For Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #444 #1a1a1a;
+        }
+
+        /* For Edge and other browsers that support the standard */
+        @supports (scrollbar-color: #444 #1a1a1a) {
+            * {
+                scrollbar-color: #444 #1a1a1a;
+                scrollbar-width: thin;
+            }
+        }
+        .text-gray-700{
+            color: white;
+        }
     </style>
 </head>
 
@@ -407,15 +634,17 @@
                     Switch Background
                 </button>
                 <button
-                    class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300 chatbot" onclick="aa()">
+                    class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300 chatbot"
+                    onclick="aa()">
                     Synapse
                 </button>
-                <button class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all duration-300">
+                <button class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all duration-300 sumz"
+                    onclick="sumz()">
                     Instantsumz+
                 </button>
                 <button
-                    class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300">
-                    <i class="fas fa-user mr-1"></i> Login
+                    class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300 logout" onClick="loout()>
+                    <i class="fas fa-user mr-1"></i> Login out
                 </button>
             </div>
         </div>
@@ -433,22 +662,22 @@
         <div class="bg-white rounded-xl shadow-md p-6">
             <div class="flex mb-4 overflow-x-auto no-scrollbar" id="tab-container">
                 <div class="tab active flex items-center" data-tab="image">
-                    <i class="fas fa-image mr-2"></i> Extract from Image
+                    <i class="fas fa-image mr-2"></i> Img summarization
                 </div>
                 <div class="tab flex items-center" data-tab="audio">
-                    <i class="fas fa-headphones mr-2"></i> Audio to Text
+                    <i class="fas fa-headphones mr-2"></i> Audio  summarization
                 </div>
                 <div class="tab flex items-center" data-tab="video">
-                    <i class="fas fa-video mr-2"></i> Video to Text
+                    <i class="fas fa-video mr-2"></i> Video  summarization
                 </div>
                 <div class="tab flex items-center" data-tab="youtube">
-                    <i class="fab fa-youtube mr-2"></i> YouTube to Text
+                    <i class="fab fa-youtube mr-2"></i> Ytube summarization
                 </div>
                 <div class="tab flex items-center" data-tab="summarize">
                     <i class="fas fa-file-alt mr-2"></i> Summarize Text
                 </div>
                 <div class="tab flex items-center" data-tab="pdf">
-                    <i class="fas fa-file-alt mr-2"></i> PDF to Text
+                    <i class="fas fa-file-alt mr-2"></i> PDF summarization
                 </div>
             </div>
 
@@ -465,7 +694,7 @@
                     <div class="flex justify-center">
                         <button type="submit"
                             class="btn-primary px-6 py-3 rounded-lg flex items-center pulse-animation submit-btn">
-                            <i class="fas fa-magic mr-2"></i> Extract Text
+                            <i class="fas fa-magic mr-2"></i> SUMMARIZE IT
                             <div class="loader ml-2" id="image-loader"></div>
                         </button>
                     </div>
@@ -485,7 +714,7 @@
                     <div class="flex justify-center">
                         <button type="submit"
                             class="btn-primary px-6 py-3 rounded-lg flex items-center pulse-animation submit-btn">
-                            <i class="fas fa-magic mr-2"></i> Extract Text
+                            <i class="fas fa-magic mr-2"></i> SUMMARIZE IT
                             <div class="loader ml-2" id="pdf-loader"></div>
                         </button>
                     </div>
@@ -504,7 +733,7 @@
                     </div>
                     <div class="flex justify-center">
                         <button type="submit" class="btn-primary px-6 py-3 rounded-lg flex items-center submit-btn">
-                            <i class="fas fa-headphones mr-2"></i> Transcribe Audio
+                            <i class="fas fa-headphones mr-2"></i> SUMMARIZE IT
                             <div class="loader ml-2" id="audio-loader"></div>
                         </button>
                     </div>
@@ -523,7 +752,7 @@
                     </div>
                     <div class="flex justify-center">
                         <button type="submit" class="btn-primary px-6 py-3 rounded-lg flex items-center submit-btn">
-                            <i class="fas fa-video mr-2"></i> Extract Audio & Transcribe
+                            <i class="fas fa-video mr-2"></i> SUMMARIZE IT
                             <div class="loader ml-2" id="video-loader"></div>
                         </button>
                     </div>
@@ -541,7 +770,7 @@
                     </div>
                     <div class="flex justify-center">
                         <button type="submit" class="btn-primary px-6 py-3 rounded-lg flex items-center submit-btn">
-                            <i class="fab fa-youtube mr-2"></i> Extract Audio & Transcribe
+                            <i class="fab fa-youtube mr-2"></i> SUMMARIZE IT
                             <div class="loader ml-2" id="youtube-loader"></div>
                             <div class="progress-bar" id="youtube-progress"></div>
                         </button>
@@ -558,7 +787,7 @@
                     </div>
                     <div class="flex justify-center">
                         <button type="submit" class="btn-primary px-6 py-3 rounded-lg flex items-center submit-btn">
-                            <i class="fas fa-compress-alt mr-2"></i> Summarize Text
+                            <i class="fas fa-compress-alt mr-2"></i> SUMMARIZE IT
                             <div class="loader ml-2" id="summarize-loader"></div>
                         </button>
                     </div>
@@ -629,17 +858,19 @@
                     <div>
                         <h3 class="text-lg font-semibold mb-4">Product</h3>
                         <ul class="space-y-2 text-gray-400">
-                            <li><button><a href="features.html" class="hover:text-white footer-link">Features</a></button></li>
-                            <li><button><a href="doc.html" class="hover:text-white footer-link">Documentation</a></button></li>
+                            <li><button><a href="/features" class="hover:text-white footer-link">Features</a></button>
+                            </li>
+                            <li><button><a href="/doc" class="hover:text-white footer-link">Documentation</a></button>
+                            </li>
                         </ul>
                     </div>
                     <div>
                         <h3 class="text-lg font-semibold mb-4">Support</h3>
                         <ul class="space-y-2 text-gray-400">
-                            <li><a href="#" class="hover:text-white footer-link">Contact Us</a></li>
-                            <li><a href="faq.html" class="hover:text-white footer-link">FAQs</a></li>
+                            <li><a href="/faq" class="hover:text-white footer-link">FAQs</a></li>
                         </ul>
                     </div>
+
                 </div>
             </div>
             <div class="pt-8 border-t border-gray-800 text-center text-gray-500">
@@ -648,9 +879,17 @@
         </div>
     </footer>
     <script>
-        let chatbot=document.querySelector(".chatbot")
-        function aa(){
-            window.location.href="/chatbot"
+        let logout=document.querySelector(".logout")
+        function loout(){
+            window.location.href = "/"
+        }
+        let chatbot = document.querySelector(".chatbot")
+        function aa() {
+            window.location.href = "/chatbot"
+        }
+        let summz = document.querySelector(".sumz")
+        function sumz() {
+            window.location.href = "/screenpipe"
         }
         // Wait for the DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function () {
@@ -663,7 +902,7 @@
                     textPrimary: '#1F2937', // Dark text
                     textSecondary: '#4B5563', // Medium dark text
                     textTertiary: '#6B7280', // Light text
-                    textLight: '#9CA3AF', // Very light text
+                    textLight: '#9CA3AF',
                     inputBackground: 'white',
                     inputBorder: '#E5E7EB',
                     tabActiveBackground: 'white',
@@ -1042,9 +1281,7 @@
         });
         //////////////////////////////////////////////////////
         // API endpoint base URL - update this to match your Flask server
-        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:7000'  // Development environment
-    : '';  // Production environment (using relative URLs)
+        const API_BASE_URL = 'http://localhost:7000';
 
         // Tab functionality with animations
         document.addEventListener('DOMContentLoaded', function () {
@@ -1208,17 +1445,17 @@
                             // Handle the array of summaries
                             const summariesHTML = data.pdf_summaries.map((summary, index) =>
                                 `<div class="summary-chunk mb-4">
-                    <h5 class="font-semibold">Chunk ${index + 1}</h5>
-                    <div class="formatted-content">${summary}</div>
-                </div>`
+                                <h5 class="font-semibold">Chunk ${index + 1}</h5>
+                                <div class="formatted-content">${summary}</div>
+                            </div>`
                             ).join('');
 
                             document.getElementById('result-content').innerHTML = summariesHTML;
 
                             document.getElementById('summary-section').innerHTML = `
-                <h4 class="text-lg font-semibold mb-2">PDF Summary</h4>
-                <div class="formatted-content">${summariesHTML}</div>
-            `;
+                                <h4 class="text-lg font-semibold mb-2">PDF Summary</h4>
+                                <div class="formatted-content">${summariesHTML}</div>
+                            `;
                         } else {
                             document.getElementById('result-content').innerHTML = 'No summary data available';
                         }
@@ -1424,18 +1661,11 @@
                         showResultsWithAnimation(`Error: ${data.error}`);
                     } else {
                         let resultHtml = '';
-                        if (data.transcript) {
-                            resultHtml += `<div class="mb-4">
-                <h4 class="font-bold text-lg mb-2">Transcript:</h4>
-                <div class="text-gray-700">${data.transcript}</div>
-                </div>`;
-                        }
-
                         if (data.summary) {
                             resultHtml += `<div>
-                <h4 class="font-bold text-lg mb-2">Summary:</h4>
-                <div class="text-gray-700">${data.summary.replace(/\n/g, '<br>')}</div>
-                </div>`;
+                            <h4 class="font-bold text-lg mb-2">Summary:</h4>
+                            <div class="text-gray-700">${data.summary.replace(/\n/g, '<br>')}</div>
+                            </div>`;
                         }
 
                         showResultsWithAnimation(resultHtml);
@@ -1499,7 +1729,8 @@
         function showResultsWithAnimation(content) {
             const resultContainer = document.getElementById('result-container');
             resultContainer.classList.remove('hidden');
-            document.getElementById('result-content').innerHTML = content;
+            document.getElementById('result-content').innerHTML = `${content}
+             `
 
             // Apply animation
             resultContainer.classList.add('result-appear');
