@@ -715,6 +715,9 @@ def init_db():
         logger.info("Database initialized successfully")
     except Exception as e:
         logger.error(f"Error initializing database: {str(e)}")
+@app.route('/screenpipe')
+def sumz():
+    return render_template("index.html")
 
 # Initialize the database on startup
 if __name__ == '__main__':
