@@ -60,7 +60,7 @@ Highlight the most important features of your project:
 
   ## 📽️ Demo & Deliverables
 
-- **Demo Video Link:** [https://youtu.be/Us1DnhWzf-w]
+- **Demo Video Link:** [https://youtu.be/vJIQnhKvQr0]
 - **Deployment Link:** [https://thesuumarizerplus.onrender.com]
 - (NOTE: due to limited web deployment options, YouTube text summarization and Screenpipe are broken as the server cannot fetch youtube video links and doesnt allow display capture for screenpipe, the features work if ran on localhost as shown in the demo video)
 - **Pitch Deck / PPT Link:** [projectsumz^M.pdf](https://github.com/user-attachments/files/19799532/projectsumz.M.pdf)  
