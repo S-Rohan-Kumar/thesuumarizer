@@ -207,7 +207,7 @@
         .loader {
             border: 3px solid rgba(99, 102, 241, 0.1);
             border-radius: 50%;
-            border-top: 3px solid white;
+            border-top: 3px solid var(--primary);
             width: 24px;
             height: 24px;
             animation: spin 1s linear infinite;
@@ -406,12 +406,11 @@
                     Switch Background
                 </button>
                 <button
-                    class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300 chatbot"
-                    onclick="aa()">
+                    class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300 chatbot" onclick="aa()">
                     Synapse
                 </button>
-                <button class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all duration-300 scrn" onclick="bb()">
-                    Instasumz+
+                <button class="px-4 py-2 rounded-lg text-gray-600 hover:text-gray-900 transition-all duration-300">
+                    <i class="fas fa-question-circle mr-1"></i> Help
                 </button>
                 <button
                     class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-300">
@@ -629,17 +628,15 @@
                     <div>
                         <h3 class="text-lg font-semibold mb-4">Product</h3>
                         <ul class="space-y-2 text-gray-400">
-                            <li><button><a href="/features" class="hover:text-white footer-link">Features</a></button>
-                            </li>
-                            <li><button><a href="/doc" class="hover:text-white footer-link">Documentation</a></button>
-                            </li>
+                            <li><button><a href="features.html" class="hover:text-white footer-link">Features</a></button></li>
+                            <li><button><a href="doc.html" class="hover:text-white footer-link">Documentation</a></button></li>
                         </ul>
                     </div>
                     <div>
                         <h3 class="text-lg font-semibold mb-4">Support</h3>
                         <ul class="space-y-2 text-gray-400">
                             <li><a href="#" class="hover:text-white footer-link">Contact Us</a></li>
-                            <li><a href="/faq" class="hover:text-white footer-link">FAQs</a></li>
+                            <li><a href="faq.html" class="hover:text-white footer-link">FAQs</a></li>
                         </ul>
                     </div>
                 </div>
@@ -650,12 +647,9 @@
         </div>
     </footer>
     <script>
-        let chatbot = document.querySelector(".chatbot")
-        function aa() {
-            window.location.href = "/chatbot"
-        }
-        function bb() {
-            window.location.href = "/screenpipe"
+        let chatbot=document.querySelector(".chatbot")
+        function aa(){
+            window.location.href="/chatbot"
         }
         // Wait for the DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function () {
@@ -1048,8 +1042,8 @@
         //////////////////////////////////////////////////////
         // API endpoint base URL - update this to match your Flask server
         const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:5000'  // Development environment
-            : '';  // Production environment (using relative URLs)
+    ? 'http://localhost:7000'  // Development environment
+    : '';  // Production environment (using relative URLs)
 
         // Tab functionality with animations
         document.addEventListener('DOMContentLoaded', function () {
@@ -1195,7 +1189,7 @@
                 document.getElementById('pdf-loader').style.display = 'inline-block';
 
                 // Send the formData to your server
-                fetch(`${API_BASE_URS}/upload-pdf`, {
+                fetch(`${API_BASE_URL}/upload-pdf`, {
                     method: 'POST',
                     body: formData
                 })
