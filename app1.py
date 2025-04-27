@@ -260,9 +260,7 @@ def imgtxt():
         image_file = request.files['image']
         logger.info("Image uploaded: %s", image_file.filename)
         
-        # Create a temporary file to save the uploaded image
-        import tempfile
-        import os
+      
         
         # Create a temporary file with the same extension as the original
         _, file_extension = os.path.splitext(image_file.filename)
