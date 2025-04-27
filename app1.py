@@ -248,32 +248,58 @@ def register():
 @app.route('/main', methods=['GET','POST'])
 def main():
     return render_template("dark.html")    
+
 @app.route('/imgtxt', methods=['POST'])
 def imgtxt():
     """Extract text from an uploaded image"""
+    temp_file_path = None
     try:
         if 'image' not in request.files:
             return jsonify({"error": "No image uploaded"}), 400
         
         image_file = request.files['image']
         logger.info("Image uploaded: %s", image_file.filename)
-        text =extract_text(image_file)
+        
+        # Create a temporary file to save the uploaded image
+        import tempfile
+        import os
+        
+        # Create a temporary file with the same extension as the original
+        _, file_extension = os.path.splitext(image_file.filename)
+        temp_file = tempfile.NamedTemporaryFile(suffix=file_extension, delete=False)
+        temp_file_path = temp_file.name
+        temp_file.close()
+        
+        # Save the uploaded file to the temporary file
+        image_file.save(temp_file_path)
+        
+        # Process the temporary file
+        text = extract_text(temp_file_path)
+        
         client = Groq(api_key="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")
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{
                 "role": "user",
-                "content": f"summarize this in a very beautiful in the language the input is provided:{text}"
+                "content": f"summarize this in a very short manner in the language the input is provided:{text}"
             }]
         )
-
         summary = response.choices[0].message.content
         
-        
-        return jsonify({"txt":summary})
+        return jsonify({"txt": summary})
+    
     except Exception as e:
         logger.error("Error in image to text: %s", str(e))
         return jsonify({"error": f"Failed to process image: {str(e)}"}), 500
+    
+    finally:
+        # Clean up the temporary file
+        if temp_file_path and os.path.exists(temp_file_path):
+            try:
+                os.remove(temp_file_path)
+                logger.info("Temporary file removed: %s", temp_file_path)
+            except Exception as e:
+                logger.error("Failed to remove temporary file: %s", str(e))
 
 
 def extract_pdf_in_chunks(pdf_path, chunk_size=4000, by_pages=False):
