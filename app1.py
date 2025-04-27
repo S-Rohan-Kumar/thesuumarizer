@@ -265,9 +265,7 @@ def imgtxt():
         image_file = request.files['image']
         logger.info("Image uploaded: %s", image_file.filename)
         
-        # Create a temporary file for the uploaded image
        
-        
         
         def process_with_memory_limit(image_path):
             """Process image with reduced size to limit memory usage"""
@@ -337,9 +335,9 @@ def imgtxt():
         # Process image to reduce memory usage
         processed_path = process_with_memory_limit(temp_file_path)
         
-        # Define a very strict timeout function
+        # Define a very strict timeout function with multi-language support
         def extract_text_with_strict_timeout(image_path, timeout=15):
-            """Extract text with a strict timeout using alarm signal"""
+            """Extract text with a strict timeout using alarm signal with multi-language support"""
             import pytesseract
             
             result = None
@@ -350,15 +348,51 @@ def imgtxt():
                 timed_out = True
                 raise TimeoutError("OCR timed out")
             
+            # First, try to detect the language
+            try:
+                # Use a quicker method to detect script/language
+                pil_img = Image.open(image_path).convert('L')
+                sample = pytesseract.image_to_osd(pil_img)
+                pil_img.close()
+                
+                # Try to extract script info
+                script_match = re.search(r'Script: ([a-zA-Z]+)', sample)
+                script = script_match.group(1).lower() if script_match else 'latin'
+                
+                logger.info(f"Detected script: {script}")
+                
+                # Map script to language options
+                lang_map = {
+                    'latin': 'eng+fra+spa+deu+ita+por',
+                    'arabic': 'ara',
+                    'cyrillic': 'rus+ukr+bul',
+                    'han': 'chi_sim+chi_tra+jpn+kor',
+                    'devanagari': 'hin+san',
+                    'thai': 'tha',
+                    'japanese': 'jpn',
+                    'korean': 'kor',
+                    'hebrew': 'heb',
+                    'greek': 'grc+ell'
+                }
+                
+                # Default to a broad set of languages if script not recognized
+                lang_option = lang_map.get(script, 'eng+fra+spa+deu+ita+por+ara+rus+chi_sim+jpn')
+                
+            except Exception as e:
+                logger.warning(f"Language detection failed: {str(e)}, using default languages")
+                # If language detection fails, use common languages
+                lang_option = 'eng+fra+spa+deu+ita+por'
+            
             # Set timeout handler
             try:
                 original_handler = signal.signal(signal.SIGALRM, timeout_handler)
                 signal.alarm(timeout)
                 
-                # Simplified OCR call with minimal options
+                # OCR call with language-specific options
+                logger.info(f"Running OCR with languages: {lang_option}")
                 result = pytesseract.image_to_string(
                     image_path,
-                    config='--oem 1 --psm 3 -l eng+fra+spa+deu+ita+por --dpi 300'
+                    config=f'--oem 1 --psm 3 -l {lang_option} --dpi 300'
                 )
                 
                 # Cancel alarm
@@ -402,19 +436,49 @@ def imgtxt():
         
         # Use a separate timeout for the LLM call
         try:
-            # Process with LLM using a faster model
+            # Process with LLM with proper multi-language handling
             client = Groq(api_key="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")
             
-            # Use a faster model or reduce token count if available
+            # Detect possible language family for better instruction
+            def detect_language_family(text_sample):
+                # Simple script detection based on character ranges
+                scripts = {
+                    'latin': lambda c: 0x0000 <= ord(c) <= 0x024F,
+                    'cyrillic': lambda c: 0x0400 <= ord(c) <= 0x04FF,
+                    'arabic': lambda c: 0x0600 <= ord(c) <= 0x06FF,
+                    'devanagari': lambda c: 0x0900 <= ord(c) <= 0x097F,
+                    'chinese': lambda c: 0x4E00 <= ord(c) <= 0x9FFF,
+                    'japanese': lambda c: 0x3040 <= ord(c) <= 0x30FF,
+                    'korean': lambda c: 0xAC00 <= ord(c) <= 0xD7AF,
+                    'thai': lambda c: 0x0E00 <= ord(c) <= 0x0E7F
+                }
+                
+                # Count characters in each script
+                counts = {script: 0 for script in scripts}
+                for char in text_sample:
+                    for script, check in scripts.items():
+                        if check(char):
+                            counts[script] += 1
+                
+                # Return the most common script
+                if not counts or max(counts.values()) == 0:
+                    return 'unknown'
+                return max(counts, key=counts.get)
+            
+            # Get a sample of the text for language detection (first 100 chars)
+            text_sample = text[:100] if len(text) > 100 else text
+            lang_family = detect_language_family(text_sample)
+            logger.info(f"Detected language family: {lang_family}")
+            
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",  # Could use a faster model if available
+                model="llama-3.3-70b-versatile",
                 messages=[{
                     "role": "system",
-                    "content": "Create a brief summary of the text while preserving its original language."
+                    "content": f"You are a language expert specialized in {lang_family} languages. Create a brief, beautiful summary of the text while preserving its original language and style."
                 },
                 {
                     "role": "user",
-                    "content": f"Summarize this text briefly, keeping the original language:\n\n{text}"
+                    "content": f"Create a beautiful summary of this text, maintaining its original language and cultural nuances:\n\n{text}"
                 }],
                 max_tokens=200  # Limit response size
             )
