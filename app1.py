@@ -40,9 +40,9 @@ app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key_for_dev')
 
 # Database configuration from the email screenshot
 app.config['MYSQL_HOST'] = 'sql12.freesqldatabase.com'
-app.config['MYSQL_USER'] = 'sql12774304'
-app.config['MYSQL_PASSWORD'] = 'tdBvZrrFiX'
-app.config['MYSQL_DB'] = 'sql12774304'
+app.config['MYSQL_USER'] = 'sql12775642'
+app.config['MYSQL_PASSWORD'] = 'dWBPNZ32ct'
+app.config['MYSQL_DB'] = 'sql12775642'
 app.config['MYSQL_PORT'] = 3306
 mysql = MySQL(app)
 
