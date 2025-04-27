@@ -17,6 +17,8 @@ from werkzeug.utils import secure_filename
 import pdfplumber
 import subprocess
 import bcrypt
+import signal
+import time
 import re
 import numpy as np
 import cv2
@@ -254,7 +256,8 @@ def main():
 @app.route('/imgtxt', methods=['POST'])
 def imgtxt():
     """Extract text from an uploaded image with improved timeout and memory handling"""
-    temp_file_path = None
+    temp_files = []  # Track all temporary files for cleanup
+    
     try:
         if 'image' not in request.files:
             return jsonify({"error": "No image uploaded"}), 400
@@ -262,90 +265,163 @@ def imgtxt():
         image_file = request.files['image']
         logger.info("Image uploaded: %s", image_file.filename)
         
+        # Create a temporary file for the uploaded image
        
+        
+        
+        def process_with_memory_limit(image_path):
+            """Process image with reduced size to limit memory usage"""
+            try:
+                # Read image as grayscale directly (uses less memory)
+                img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+                
+                if img is None:
+                    logger.warning("Could not read image with OpenCV, trying PIL")
+                    # Try with PIL if OpenCV fails
+                    pil_img = Image.open(image_path).convert('L')
+                    img = np.array(pil_img)
+                    pil_img.close()
+                
+                # Get dimensions
+                height, width = img.shape
+                
+                # Set very conservative size limits
+                max_dimension = 1200
+                max_pixels = 1200 * 1200  # ~1.4 MP
+                
+                # Check if image exceeds either limit
+                if height * width > max_pixels or height > max_dimension or width > max_dimension:
+                    # Calculate scale to fit within max pixels
+                    scale = min(
+                        (max_pixels / (height * width)) ** 0.5,
+                        max_dimension / max(height, width)
+                    )
+                    new_width = int(width * scale)
+                    new_height = int(height * scale)
+                    
+                    # Resize with NEAREST interpolation (fastest and lowest memory)
+                    img = cv2.resize(img, (new_width, new_height), 
+                                   interpolation=cv2.INTER_NEAREST)
+                    
+                    logger.info(f"Resized image from {width}x{height} to {new_width}x{new_height}")
+                    
+                # Apply minimal image enhancements
+                img = cv2.GaussianBlur(img, (3, 3), 0)
+                
+                # Apply simple binary threshold instead of adaptive (uses less memory)
+                _, img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+                
+                # Save processed image to a new temp file
+                processed_temp = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+                processed_path = processed_temp.name
+                processed_temp.close()
+                temp_files.append(processed_path)  # Track for cleanup
+                
+                cv2.imwrite(processed_path, img)
+                return processed_path
+                
+            except Exception as e:
+                logger.error(f"Image preprocessing failed: {str(e)}")
+                return image_path  # Return original if processing fails
         
         # Create a temporary file with the same extension as the original
         _, file_extension = os.path.splitext(image_file.filename)
         temp_file = tempfile.NamedTemporaryFile(suffix=file_extension, delete=False)
         temp_file_path = temp_file.name
         temp_file.close()
+        temp_files.append(temp_file_path)  # Track for cleanup
         
         # Save the uploaded file to the temporary file
         image_file.save(temp_file_path)
         
-        # Preprocess image to improve OCR performance and reduce memory usage
-        try:
-            # Read and resize image if it's too large
-            img = cv2.imread(temp_file_path)
-            
-            if img is not None:
-                # Check image dimensions
-                height, width = img.shape[:2]
-                max_dimension = 1800  # Limit max dimension
-                
-                # Resize if image is too large
-                if height > max_dimension or width > max_dimension:
-                    scale = max_dimension / max(height, width)
-                    new_width = int(width * scale)
-                    new_height = int(height * scale)
-                    img = cv2.resize(img, (new_width, new_height))
-                    
-                # Improve image quality for OCR
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Convert to grayscale
-                img = cv2.GaussianBlur(img, (3, 3), 0)  # Apply slight blur to reduce noise
-                img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                          cv2.THRESH_BINARY, 11, 2)  # Apply adaptive threshold
-                
-                # Save the preprocessed image
-                processed_temp = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
-                processed_path = processed_temp.name
-                processed_temp.close()
-                cv2.imwrite(processed_path, img)
-                
-                # Replace the original temp path with the processed one
-                os.remove(temp_file_path)
-                temp_file_path = processed_path
-                logger.info("Image preprocessed successfully")
-        except Exception as e:
-            logger.warning(f"Image preprocessing failed: {str(e)}, continuing with original image")
+        # Process image to reduce memory usage
+        processed_path = process_with_memory_limit(temp_file_path)
         
-        # Use a custom function to call pytesseract with a timeout
-        def extract_text_with_timeout(image_path, timeout=20):
+        # Define a very strict timeout function
+        def extract_text_with_strict_timeout(image_path, timeout=15):
+            """Extract text with a strict timeout using alarm signal"""
             import pytesseract
-            from concurrent.futures import ThreadPoolExecutor, TimeoutError
             
-            def perform_ocr():
-                return extract_text(image_path)
+            result = None
+            timed_out = False
             
-            with ThreadPoolExecutor() as executor:
-                future = executor.submit(perform_ocr)
-                try:
-                    result = future.result(timeout=timeout)
-                    return result
-                except TimeoutError:
-                    logger.warning("OCR operation timed out, returning partial result")
-                    return "Image text extraction timed out. Please try with a clearer image or simpler text content."
+            def timeout_handler(signum, frame):
+                nonlocal timed_out
+                timed_out = True
+                raise TimeoutError("OCR timed out")
+            
+            # Set timeout handler
+            try:
+                original_handler = signal.signal(signal.SIGALRM, timeout_handler)
+                signal.alarm(timeout)
+                
+                # Simplified OCR call with minimal options
+                result = pytesseract.image_to_string(
+                    image_path,
+                    config='--oem 1 --psm 3 -l eng+fra+spa+deu+ita+por --dpi 300'
+                )
+                
+                # Cancel alarm
+                signal.alarm(0)
+                # Restore original handler
+                signal.signal(signal.SIGALRM, original_handler)
+                
+            except TimeoutError:
+                logger.warning("OCR operation timed out")
+                return "OCR process timed out. The image may be too complex or unclear."
+            except Exception as e:
+                logger.error(f"OCR failed: {str(e)}")
+                return f"Failed to extract text: {str(e)}"
+            
+            return result if result else "No text could be extracted from the image."
         
-        # Process with timeout
-        text = extract_text_with_timeout(temp_file_path)
+        # Extract text with strict timeout
+        start_time = time.time()
+        text = extract_text_with_strict_timeout(processed_path)
+        logger.info(f"OCR completed in {time.time() - start_time:.2f} seconds")
         
-        if not text or text.strip() == "":
-            text = "No text could be extracted from the image."
+        # Check if text extraction failed or returned empty result
+        if not text or text.strip() == "" or "timed out" in text:
+            # Fall back to a simpler OCR method if available
+            try:
+                from PIL import Image
+                import pytesseract
+                
+                logger.info("Trying fallback OCR method")
+                pil_img = Image.open(processed_path).convert('L')
+                simple_text = pytesseract.image_to_string(pil_img, config='--psm 6')
+                pil_img.close()
+                
+                if simple_text and simple_text.strip() != "":
+                    text = simple_text
+                else:
+                    text = "No text could be extracted from the image."
+            except Exception as e:
+                logger.error(f"Fallback OCR failed: {str(e)}")
+                # Keep original text message
         
-        # Improved prompt for better multi-language handling
-        client = Groq(api_key="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")
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[{
-                "role": "system",
-                "content": "You are a helpful assistant that creates beautiful summaries. Detect the language of the provided text and respond in the same language."
-            },
-            {
-                "role": "user",
-                "content": f"Create a beautiful, concise summary of the following text while preserving its original language and style:\n\n{text}"
-            }]
-        )
-        summary = response.choices[0].message.content
+        # Use a separate timeout for the LLM call
+        try:
+            # Process with LLM using a faster model
+            client = Groq(api_key="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")
+            
+            # Use a faster model or reduce token count if available
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",  # Could use a faster model if available
+                messages=[{
+                    "role": "system",
+                    "content": "Create a brief summary of the text while preserving its original language."
+                },
+                {
+                    "role": "user",
+                    "content": f"Summarize this text briefly, keeping the original language:\n\n{text}"
+                }],
+                max_tokens=200  # Limit response size
+            )
+            summary = response.choices[0].message.content
+        except Exception as e:
+            logger.error(f"LLM processing failed: {str(e)}")
+            summary = text  # Fallback to the original text if LLM fails
         
         return jsonify({"txt": summary})
     
@@ -355,12 +431,13 @@ def imgtxt():
     
     finally:
         # Clean up all temporary files
-        if temp_file_path and os.path.exists(temp_file_path):
-            try:
-                os.remove(temp_file_path)
-                logger.info("Temporary file removed: %s", temp_file_path)
-            except Exception as e:
-                logger.error("Failed to remove temporary file: %s", str(e))
+        for file_path in temp_files:
+            if file_path and os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                    logger.info(f"Temporary file removed: {file_path}")
+                except Exception as e:
+                    logger.error(f"Failed to remove temporary file {file_path}: {str(e)}")
 
 def extract_pdf_in_chunks(pdf_path, chunk_size=4000, by_pages=False):
     """
