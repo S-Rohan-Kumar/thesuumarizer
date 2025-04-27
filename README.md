@@ -62,7 +62,7 @@ Highlight the most important features of your project:
 
 - **Demo Video Link:** [https://youtu.be/vJIQnhKvQr0]
 - **Deployment Link:** [https://thesuumarizerplus.onrender.com]
-- for signing in use email as summarizer@gmail.com and password =12345678
+- for signing in use email as summarizer+@gmail.com and password =12345678
 - (NOTE: due to limited web deployment options, YouTube text summarization and Screenpipe are broken as the server cannot fetch youtube video links and doesnt allow display capture for screenpipe, the features work if ran on localhost as shown in the demo video)
 - **Pitch Deck / PPT Link:** [projectsumz^M.pdf](https://github.com/user-attachments/files/19799532/projectsumz.M.pdf)  
 
