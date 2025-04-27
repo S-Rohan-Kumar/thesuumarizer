@@ -18,6 +18,8 @@ import pdfplumber
 import subprocess
 import bcrypt
 import re
+import numpy as np
+import cv2
 import logging
 from dotenv import load_dotenv
 import time
@@ -251,7 +253,7 @@ def main():
 
 @app.route('/imgtxt', methods=['POST'])
 def imgtxt():
-    """Extract text from an uploaded image"""
+    """Extract text from an uploaded image with improved timeout and memory handling"""
     temp_file_path = None
     try:
         if 'image' not in request.files:
@@ -260,7 +262,7 @@ def imgtxt():
         image_file = request.files['image']
         logger.info("Image uploaded: %s", image_file.filename)
         
-      
+       
         
         # Create a temporary file with the same extension as the original
         _, file_extension = os.path.splitext(image_file.filename)
@@ -271,15 +273,76 @@ def imgtxt():
         # Save the uploaded file to the temporary file
         image_file.save(temp_file_path)
         
-        # Process the temporary file
-        text = extract_text(temp_file_path)
+        # Preprocess image to improve OCR performance and reduce memory usage
+        try:
+            # Read and resize image if it's too large
+            img = cv2.imread(temp_file_path)
+            
+            if img is not None:
+                # Check image dimensions
+                height, width = img.shape[:2]
+                max_dimension = 1800  # Limit max dimension
+                
+                # Resize if image is too large
+                if height > max_dimension or width > max_dimension:
+                    scale = max_dimension / max(height, width)
+                    new_width = int(width * scale)
+                    new_height = int(height * scale)
+                    img = cv2.resize(img, (new_width, new_height))
+                    
+                # Improve image quality for OCR
+                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)  # Convert to grayscale
+                img = cv2.GaussianBlur(img, (3, 3), 0)  # Apply slight blur to reduce noise
+                img = cv2.adaptiveThreshold(img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                          cv2.THRESH_BINARY, 11, 2)  # Apply adaptive threshold
+                
+                # Save the preprocessed image
+                processed_temp = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+                processed_path = processed_temp.name
+                processed_temp.close()
+                cv2.imwrite(processed_path, img)
+                
+                # Replace the original temp path with the processed one
+                os.remove(temp_file_path)
+                temp_file_path = processed_path
+                logger.info("Image preprocessed successfully")
+        except Exception as e:
+            logger.warning(f"Image preprocessing failed: {str(e)}, continuing with original image")
         
+        # Use a custom function to call pytesseract with a timeout
+        def extract_text_with_timeout(image_path, timeout=20):
+            import pytesseract
+            from concurrent.futures import ThreadPoolExecutor, TimeoutError
+            
+            def perform_ocr():
+                return extract_text(image_path)
+            
+            with ThreadPoolExecutor() as executor:
+                future = executor.submit(perform_ocr)
+                try:
+                    result = future.result(timeout=timeout)
+                    return result
+                except TimeoutError:
+                    logger.warning("OCR operation timed out, returning partial result")
+                    return "Image text extraction timed out. Please try with a clearer image or simpler text content."
+        
+        # Process with timeout
+        text = extract_text_with_timeout(temp_file_path)
+        
+        if not text or text.strip() == "":
+            text = "No text could be extracted from the image."
+        
+        # Improved prompt for better multi-language handling
         client = Groq(api_key="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")
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{
+                "role": "system",
+                "content": "You are a helpful assistant that creates beautiful summaries. Detect the language of the provided text and respond in the same language."
+            },
+            {
                 "role": "user",
-                "content": f"summarize this in a very short manner in the language the input is provided:{text}"
+                "content": f"Create a beautiful, concise summary of the following text while preserving its original language and style:\n\n{text}"
             }]
         )
         summary = response.choices[0].message.content
@@ -291,14 +354,13 @@ def imgtxt():
         return jsonify({"error": f"Failed to process image: {str(e)}"}), 500
     
     finally:
-        # Clean up the temporary file
+        # Clean up all temporary files
         if temp_file_path and os.path.exists(temp_file_path):
             try:
                 os.remove(temp_file_path)
                 logger.info("Temporary file removed: %s", temp_file_path)
             except Exception as e:
                 logger.error("Failed to remove temporary file: %s", str(e))
-
 
 def extract_pdf_in_chunks(pdf_path, chunk_size=4000, by_pages=False):
     """
