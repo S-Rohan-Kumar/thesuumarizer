@@ -255,7 +255,7 @@ def main():
 
 @app.route('/imgtxt', methods=['POST'])
 def imgtxt():
-    """Extract text from an uploaded image with improved timeout and memory handling"""
+    """Extract text from an uploaded image with improved timeout and memory handling and Indian language support"""
     temp_files = []  # Track all temporary files for cleanup
     
     try:
@@ -265,7 +265,84 @@ def imgtxt():
         image_file = request.files['image']
         logger.info("Image uploaded: %s", image_file.filename)
         
-       
+        # Dictionary mapping language codes to their full names
+        LANGUAGE_NAMES = {
+            'eng': 'English',
+            'hin': 'Hindi',
+            'kan': 'Kannada',
+            'tam': 'Tamil',
+            'tel': 'Telugu',
+            'mar': 'Marathi',
+            'ben': 'Bengali',
+            'guj': 'Gujarati',
+            'ori': 'Odia',
+            'pan': 'Punjabi',
+            'mal': 'Malayalam',
+            'urd': 'Urdu',
+            'asm': 'Assamese',
+            'san': 'Sanskrit'
+        }
+
+        # Unicode ranges for various Indian languages
+        UNICODE_RANGES = {
+            'Devanagari': (0x0900, 0x097F),  # Hindi, Marathi, Sanskrit
+            'Bengali': (0x0980, 0x09FF),
+            'Gurmukhi': (0x0A00, 0x0A7F),    # Punjabi
+            'Gujarati': (0x0A80, 0x0AFF),
+            'Oriya': (0x0B00, 0x0B7F),       # Odia
+            'Tamil': (0x0B80, 0x0BFF),
+            'Telugu': (0x0C00, 0x0C7F),
+            'Kannada': (0x0C80, 0x0CFF),
+            'Malayalam': (0x0D00, 0x0D7F),
+            'Sinhala': (0x0D80, 0x0DFF),
+            'Urdu': (0x0600, 0x06FF)         # Urdu uses Arabic script
+        }
+
+        def detect_script_from_text(text):
+            """
+            Detect which script is predominantly used in the text
+            based on Unicode character ranges.
+            """
+            if not text:
+                return "Unknown"
+            
+            # Count characters in each script
+            script_counts = {}
+            for char in text:
+                code_point = ord(char)
+                for script, (start, end) in UNICODE_RANGES.items():
+                    if start <= code_point <= end:
+                        script_counts[script] = script_counts.get(script, 0) + 1
+                        break
+            
+            # Check for English (Latin script)
+            latin_count = len(re.findall(r'[a-zA-Z]', text))
+            if latin_count > 0:
+                script_counts['Latin'] = latin_count
+            
+            # Find predominant script
+            if not script_counts:
+                return "Unknown"
+            
+            predominant_script = max(script_counts, key=script_counts.get)
+            return predominant_script
+
+        def get_tesseract_lang_code(script):
+            """Map script name to Tesseract language code"""
+            script_to_lang = {
+                'Devanagari': 'hin+mar+san',  # Hindi, Marathi, Sanskrit
+                'Bengali': 'ben',
+                'Gurmukhi': 'pan',
+                'Gujarati': 'guj',
+                'Oriya': 'ori',
+                'Tamil': 'tam',
+                'Telugu': 'tel',
+                'Kannada': 'kan',
+                'Malayalam': 'mal',
+                'Latin': 'eng',
+                'Urdu': 'urd'
+            }
+            return script_to_lang.get(script, 'eng')
         
         def process_with_memory_limit(image_path):
             """Process image with reduced size to limit memory usage"""
@@ -348,40 +425,61 @@ def imgtxt():
                 timed_out = True
                 raise TimeoutError("OCR timed out")
             
-            # First, try to detect the language
+            # First, attempt a preliminary OCR to detect Indian languages
             try:
-                # Use a quicker method to detect script/language
+                # Use a quicker method for initial language detection
                 pil_img = Image.open(image_path).convert('L')
-                sample = pytesseract.image_to_osd(pil_img)
+                
+                # Initial OCR with multiple languages to detect script
+                # Use common Indian languages for detection
+                initial_text = pytesseract.image_to_string(
+                    pil_img,
+                    lang='eng+hin+tam+tel+kan+ori+pan+guj+ben+mal+urd',
+                    config='--psm 6'  # Assume a single uniform block of text
+                )
+                
+                # Detect the script from the initial OCR
+                detected_script = detect_script_from_text(initial_text)
+                
+                # Get the corresponding Tesseract language code
+                lang_option = get_tesseract_lang_code(detected_script)
+                
+                logger.info(f"Detected script: {detected_script}, using language option: {lang_option}")
+                
+                # If it's an unknown script, fall back to general script detection
+                if detected_script == "Unknown":
+                    try:
+                        sample = pytesseract.image_to_osd(pil_img)
+                        script_match = re.search(r'Script: ([a-zA-Z]+)', sample)
+                        script = script_match.group(1).lower() if script_match else 'latin'
+                        
+                        logger.info(f"Fallback detected script: {script}")
+                        
+                        # Map script to language options
+                        lang_map = {
+                            'latin': 'eng+fra+spa+deu+ita+por',
+                            'arabic': 'ara+urd',
+                            'cyrillic': 'rus+ukr+bul',
+                            'han': 'chi_sim+chi_tra+jpn+kor',
+                            'devanagari': 'hin+san+mar',
+                            'thai': 'tha',
+                            'japanese': 'jpn',
+                            'korean': 'kor',
+                            'hebrew': 'heb',
+                            'greek': 'grc+ell'
+                        }
+                        
+                        lang_option = lang_map.get(script, 'eng+hin+tam+tel+kan+ben')
+                    except Exception as e:
+                        logger.warning(f"Script detection failed: {str(e)}, using default languages")
+                        lang_option = 'eng+hin+tam+tel+kan+ben'
+                
                 pil_img.close()
                 
-                # Try to extract script info
-                script_match = re.search(r'Script: ([a-zA-Z]+)', sample)
-                script = script_match.group(1).lower() if script_match else 'latin'
-                
-                logger.info(f"Detected script: {script}")
-                
-                # Map script to language options
-                lang_map = {
-                    'latin': 'eng+fra+spa+deu+ita+por',
-                    'arabic': 'ara',
-                    'cyrillic': 'rus+ukr+bul',
-                    'han': 'chi_sim+chi_tra+jpn+kor',
-                    'devanagari': 'hin+san',
-                    'thai': 'tha',
-                    'japanese': 'jpn',
-                    'korean': 'kor',
-                    'hebrew': 'heb',
-                    'greek': 'grc+ell'
-                }
-                
-                # Default to a broad set of languages if script not recognized
-                lang_option = lang_map.get(script, 'eng+fra+spa+deu+ita+por+ara+rus+chi_sim+jpn')
-                
             except Exception as e:
-                logger.warning(f"Language detection failed: {str(e)}, using default languages")
-                # If language detection fails, use common languages
-                lang_option = 'eng+fra+spa+deu+ita+por'
+                logger.warning(f"Language detection failed: {str(e)}, using default Indian languages")
+                # If language detection fails, use common Indian languages
+                lang_option = 'eng+hin+tam+tel+kan+ben+mal+ori+pan+guj+urd'
             
             # Set timeout handler
             try:
@@ -392,7 +490,8 @@ def imgtxt():
                 logger.info(f"Running OCR with languages: {lang_option}")
                 result = pytesseract.image_to_string(
                     image_path,
-                    config=f'--oem 1 --psm 3 -l {lang_option} --dpi 300'
+                    lang=lang_option,
+                    config='--oem 1 --psm 3 --dpi 300'
                 )
                 
                 # Cancel alarm
@@ -423,7 +522,13 @@ def imgtxt():
                 
                 logger.info("Trying fallback OCR method")
                 pil_img = Image.open(processed_path).convert('L')
-                simple_text = pytesseract.image_to_string(pil_img, config='--psm 6')
+                
+                # For fallback, we use a broad set of Indian languages
+                simple_text = pytesseract.image_to_string(
+                    pil_img, 
+                    lang='eng+hin+tam+tel+kan+ben+mal',
+                    config='--psm 6'
+                )
                 pil_img.close()
                 
                 if simple_text and simple_text.strip() != "":
@@ -434,47 +539,23 @@ def imgtxt():
                 logger.error(f"Fallback OCR failed: {str(e)}")
                 # Keep original text message
         
+        # Detect script/language from the extracted text
+        detected_script = detect_script_from_text(text)
+        lang_code = get_tesseract_lang_code(detected_script).split('+')[0]  # Get primary language
+        detected_lang = LANGUAGE_NAMES.get(lang_code, detected_script)
+        
+        logger.info(f"Final detected script: {detected_script}, language: {detected_lang}")
+        
         # Use a separate timeout for the LLM call
         try:
             # Process with LLM with proper multi-language handling
             client = Groq(api_key="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")
             
-            # Detect possible language family for better instruction
-            def detect_language_family(text_sample):
-                # Simple script detection based on character ranges
-                scripts = {
-                    'latin': lambda c: 0x0000 <= ord(c) <= 0x024F,
-                    'cyrillic': lambda c: 0x0400 <= ord(c) <= 0x04FF,
-                    'arabic': lambda c: 0x0600 <= ord(c) <= 0x06FF,
-                    'devanagari': lambda c: 0x0900 <= ord(c) <= 0x097F,
-                    'chinese': lambda c: 0x4E00 <= ord(c) <= 0x9FFF,
-                    'japanese': lambda c: 0x3040 <= ord(c) <= 0x30FF,
-                    'korean': lambda c: 0xAC00 <= ord(c) <= 0xD7AF,
-                    'thai': lambda c: 0x0E00 <= ord(c) <= 0x0E7F
-                }
-                
-                # Count characters in each script
-                counts = {script: 0 for script in scripts}
-                for char in text_sample:
-                    for script, check in scripts.items():
-                        if check(char):
-                            counts[script] += 1
-                
-                # Return the most common script
-                if not counts or max(counts.values()) == 0:
-                    return 'unknown'
-                return max(counts, key=counts.get)
-            
-            # Get a sample of the text for language detection (first 100 chars)
-            text_sample = text[:100] if len(text) > 100 else text
-            lang_family = detect_language_family(text_sample)
-            logger.info(f"Detected language family: {lang_family}")
-            
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[{
                     "role": "system",
-                    "content": f"You are a language expert specialized in {lang_family} languages. Create a brief, beautiful summary of the text while preserving its original language and style."
+                    "content": f"You are a language expert specialized in {detected_lang} language. Create a brief, beautiful summary of the text while preserving its original language and style."
                 },
                 {
                     "role": "user",
@@ -487,7 +568,11 @@ def imgtxt():
             logger.error(f"LLM processing failed: {str(e)}")
             summary = text  # Fallback to the original text if LLM fails
         
-        return jsonify({"txt": summary})
+        return jsonify({
+            "txt": summary,
+            "detected_language": detected_lang,
+            "detected_script": detected_script
+        })
     
     except Exception as e:
         logger.error("Error in image to text: %s", str(e))
